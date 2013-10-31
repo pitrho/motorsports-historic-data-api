@@ -27,4 +27,5 @@ See the LICENSE file.
 ## Contributors
 
 * [Kyle Jensen](https://github.com/kljensen)
+* [Alejandro Mesa](https://github.com/alejom99)
 * ...please add your name here when you make your first commit
