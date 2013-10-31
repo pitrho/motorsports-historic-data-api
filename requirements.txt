@@ -1,0 +1,6 @@
+Flask==0.10.1
+Flask-RESTful==0.2.5
+Jinja2==2.7.1
+SQLAlchemy==0.8.3
+
+
