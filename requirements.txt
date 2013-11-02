@@ -1,6 +1,8 @@
 Flask==0.10.1
+Flask-Migrate==0.1.4
 Flask-RESTful==0.2.5
 Flask-SQLAlchemy==1.0
+Flask-Script==0.6.2
 Jinja2==2.7.1
 PyMySQL==0.6.1
 SQLAlchemy==0.8.3
