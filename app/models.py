@@ -1,205 +1,203 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Numeric, Time
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from flask.ext.sqlalchemy import SQLAlchemy
 
-Base = declarative_base()
+db = SQLAlchemy()
 
 
-class Driver(Base):
+class Driver(db.Model):
 
     __tablename__ = 'drivers'
 
-    id = Column(String(50), primary_key=True)
-    first_name = Column(String(50), nullable=False)
-    last_name = Column(String(50), nullable=False)
+    id = db.Column(db.String(50), primary_key=True)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
 
 
-class Team(Base):
+class Team(db.Model):
 
     __tablename__ = 'teams'
 
-    id = Column(String(50), primary_key=True)
-    name = Column(String(50), nullable=False)
-    alias = Column(String(50), nullable=False)
-    owner = Column(String(100), nullable=False)
+    id = db.Column(db.String(50), primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    alias = db.Column(db.String(50), nullable=False)
+    owner = db.Column(db.String(100), nullable=False)
     #crew_chief_id = Column(String(50), ForeignKey('crew_chiefs.id'),
     #                       nullable=False)
 
-    drivers = relationship('Driver', secondary='drivers_teams_cars')
-    cars = relationship('Car', secondary='drivers_teams_cars')
+    drivers = db.relationship('Driver', secondary='drivers_teams_cars')
+    cars = db.relationship('Car', secondary='drivers_teams_cars')
 
 
-class CrewChief(Base):
+class CrewChief(db.Model):
 
     __tablename__ = 'crew_chiefs'
 
-    id = Column(String(50), primary_key=True)
-    name = Column(String(100), nullable=False)
+    id = db.Column(db.String(50), primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
 
 
-class Car(Base):
+class Car(db.Model):
 
     __tablename__ = 'cars'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    number = Column(Integer, nullable=False)
-    type = Column(String(50), nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    number = db.Column(db.Integer, nullable=False)
+    type = db.Column(db.String(50), nullable=False)
 
 
-class DriverStanding(Base):
+class DriverStanding(db.Model):
 
     __tablename__ = 'drivers_standings'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    driver_id = Column(String(50), ForeignKey('drivers.id'), nullable=False)
-    car_id = Column(Integer, ForeignKey('car.id'), nullable=False)
-    season = Column(Integer, nullable=False)
-    position = Column(Integer, nullable=False)
-    points = Column(Integer, nullable=False)
-    poles = Column(Integer, nullable=False)
-    wins = Column(Integer, nullable=False)
-    starts = Column(Integer, nullable=False)
-    dnfs = Column(Integer, nullable=False)
-    top5 = Column(Integer, nullable=False)
-    top10 = Column(Integer, nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
+    car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
+    season = db.Column(db.Integer, nullable=False)
+    position = db.Column(db.Integer, nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+    poles = db.Column(db.Integer, nullable=False)
+    wins = db.Column(db.Integer, nullable=False)
+    starts = db.Column(db.Integer, nullable=False)
+    dnfs = db.Column(db.Integer, nullable=False)
+    top5 = db.Column(db.Integer, nullable=False)
+    top10 = db.Column(db.Integer, nullable=False)
 
 
-class TeamStanding(Base):
+class TeamStanding(db.Model):
 
     __tablename__ = 'team_standings'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    team_id = Column(String(50), ForeignKey('teams.id'), nullable=False)
-    car_id = Column(String(50), ForeignKey('cars.id'), nullable=False)
-    season = Column(Integer, nullable=False)
-    position = Column(Integer, nullable=False)
-    points = Column(Integer, nullable=False)
-    poles = Column(Integer, nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
+    car_id = db.Column(db.String(50), db.ForeignKey('cars.id'), nullable=False)
+    season = db.Column(db.Integer, nullable=False)
+    position = db.Column(db.Integer, nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+    poles = db.Column(db.Integer, nullable=False)
 
 
-class RaceType(Base):
+class RaceType(db.Model):
 
     __tablename__ = 'race_types'
 
-    id = Column(String(5), primary_key=True)
-    description = Column(String(50), nullable=True)
+    id = db.Column(db.String(5), primary_key=True)
+    description = db.Column(db.String(50), nullable=True)
 
 
-class RaceSeries(object):
+class RaceSeries(db.Model):
 
     __tablename__ = 'race_series'
 
-    id = Column(String(5), primary_key=True)
-    description = Column(String(50), nullable=True)
+    id = db.Column(db.String(5), primary_key=True)
+    description = db.Column(db.String(50), nullable=True)
 
 
-class Race(Base):
+class Race(db.Model):
 
     __tablename__ = 'races'
 
-    id = Column(String(50), primary_key=True)
-    name = Column(String(100), nullable=False)
-    season = Column(Integer, nullable=False)
-    site = Column(String(50), nullable=False)
-    circuit_name = Column(String(100), nullable=False)
-    city = Column(String(50), nullable=False)
-    state = Column(String(2), nullable=False)
-    date = Column(DateTime, nullable=False)
-    laps = Column(Integer, nullable=False)
-    length = Column(Numeric(2, 3), nullable=False)
-    distance = Column(Numeric(5, 1), nullable=False)
-    race_type = Column(String(5), ForeignKey('race_types.id'), nullable=False)
-    race_series = Column(String(5), ForeignKey('race_series.id'), nullable=False)
+    id = db.Column(db.String(50), primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    season = db.Column(db.Integer, nullable=False)
+    site = db.Column(db.String(50), nullable=False)
+    circuit_name = db.Column(db.String(100), nullable=False)
+    city = db.Column(db.String(50), nullable=False)
+    state = db.Column(db.String(2), nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
+    laps = db.Column(db.Integer, nullable=False)
+    length = db.Column(db.Numeric(2, 3), nullable=False)
+    distance = db.Column(db.Numeric(5, 1), nullable=False)
+    race_type = db.Column(db.String(5), db.ForeignKey('race_types.id'), nullable=False)
+    race_series = db.Column(db.String(5), db.ForeignKey('race_series.id'), nullable=False)
 
 
 class RacesTypes():
 
     __tablename__ = 'races_types'
 
-    race_id = Column(String(50), ForeignKey('races.id'), primary_key=True)
-    race_type = Column(String(5), ForeignKey('race_types.id'), primary_key=True)
+    race_id = db.Column(db.String(50), db.ForeignKey('races.id'), primary_key=True)
+    race_type = db.Column(db.String(5), db.ForeignKey('race_types.id'), primary_key=True)
 
 
-class RaceStanding(Base):
+class RaceStanding(db.Model):
 
     __tablename__ = 'race_standings'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    race_id = Column(String(50), ForeignKey('races.id'), nullable=False)
-    race_time = Column(Time, nullable=False)
-    caution_flags = Column(Integer, nullable=False)
-    caution_flag_laps = Column(Integer, nullable=False)
-    lead_changes = Column(Integer, nullable=False)
-    pole_speed = Column(Numeric(3, 3), nullable=False)
-    avg_speed = Column(Numeric(3, 3), nullable=False)
-    victory_margin = Column(Numeric(1, 3), nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    race_id = db.Column(db.String(50), db.ForeignKey('races.id'), nullable=False)
+    race_time = db.Column(db.Time, nullable=False)
+    caution_flags = db.Column(db.Integer, nullable=False)
+    caution_flag_laps = db.Column(db.Integer, nullable=False)
+    lead_changes = db.Column(db.Integer, nullable=False)
+    pole_speed = db.Column(db.Numeric(3, 3), nullable=False)
+    avg_speed = db.Column(db.Numeric(3, 3), nullable=False)
+    victory_margin = db.Column(db.Numeric(1, 3), nullable=False)
 
 
-class RaceEntryType(Base):
+class RaceEntryType(db.Model):
 
     __tablename__ = 'race_entry_types'
 
-    id = Column(Integer, primary_key=True)
-    entry_type = Column(String(50), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    entry_type = db.Column(db.String(50), primary_key=True)
 
 
-class RaceEntry(Base):
+class RaceEntry(db.Model):
 
     __tablename__ = 'race_entries'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    race_id = Column(String(50), ForeignKey('races.id'), nullable=False)
-    driver_id = Column(String(50), ForeignKey('drivers.id'), nullable=False)
-    team_id = Column(String(50), ForeignKey('teams.id'), nullable=False)
-    car_id = Column(String(50), ForeignKey('cars.id'), nullable=False)
-    crew_chief_id = Column(String(50), ForeignKey('crew_chiefs.id'), nullable=False)
-    entry_type = Column(Integer, ForeignKey('race_entry_types.id'), nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    race_id = db.Column(db.String(50), db.ForeignKey('races.id'), nullable=False)
+    driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
+    team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
+    car_id = db.Column(db.String(50), db.ForeignKey('cars.id'), nullable=False)
+    crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
+    entry_type = db.Column(db.Integer, db.ForeignKey('race_entry_types.id'), nullable=False)
 
 
-class RaceResult(Base):
+class RaceResult(db.Model):
 
     __tablename__ = 'race_results'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    race_id = Column(String(50), ForeignKey('races.id'), nullable=False)
-    driver_id = Column(String(50), ForeignKey('drivers.id'), nullable=False)
-    team_id = Column(String(50), ForeignKey('teams.id'), nullable=False)
-    car_id = Column(String(50), ForeignKey('cars.id'), nullable=False)
-    crew_chief_id = Column(String(50), ForeignKey('crew_chiefs.id'), nullable=False)
-    sponsor = Column(String(100), nullable=False)
-    grid = Column(Integer, nullable=False)
-    position = Column(Integer, nullable=False)
-    laps = Column(Integer, nullable=False)
-    status = Column(String(50), nullable=False)
-    laps_led = Column(Integer, nullable=False)
-    points = Column(Integer, nullable=False)
-    money = Column(Numeric(10, 2), nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    race_id = db.Column(db.String(50), db.ForeignKey('races.id'), nullable=False)
+    driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
+    team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
+    car_id = db.Column(db.String(50), db.ForeignKey('cars.id'), nullable=False)
+    crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
+    sponsor = db.Column(db.String(100), nullable=False)
+    grid = db.Column(db.Integer, nullable=False)
+    position = db.Column(db.Integer, nullable=False)
+    laps = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(50), nullable=False)
+    laps_led = db.Column(db.Integer, nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+    money = db.Column(db.Numeric(10, 2), nullable=False)
 
 
-class QualifyingResult(Base):
+class QualifyingResult(db.Model):
 
     __tablename__ = 'qualifying_results'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    race_id = Column(String(50), ForeignKey('races.id'), nullable=False)
-    driver_id = Column(String(50), ForeignKey('drivers.id'), nullable=False)
-    team_id = Column(String(50), ForeignKey('teams.id'), nullable=False)
-    car_id = Column(String(50), ForeignKey('cars.id'), nullable=False)
-    crew_chief_id = Column(String(50), ForeignKey('crew_chiefs.id'), nullable=False)
-    position = Column(Integer, nullable=False)
-    lap_time = Column(Numeric(2, 3), nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    race_id = db.Column(db.String(50), db.ForeignKey('races.id'), nullable=False)
+    driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
+    team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
+    car_id = db.Column(db.String(50), db.ForeignKey('cars.id'), nullable=False)
+    crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
+    position = db.Column(db.Integer, nullable=False)
+    lap_time = db.Column(db.Numeric(2, 3), nullable=False)
 
 
-class PracticeResult(Base):
+class PracticeResult(db.Model):
 
-    ___tablename__ = 'practive_results'
+    ___tablename__ = 'practice_results'
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    race_id = Column(String(50), ForeignKey('races.id'), nullable=False)
-    driver_id = Column(String(50), ForeignKey('drivers.id'), nullable=False)
-    team_id = Column(String(50), ForeignKey('teams.id'), nullable=False)
-    car_id = Column(String(50), ForeignKey('cars.id'), nullable=False)
-    crew_chief_id = Column(String(50), ForeignKey('crew_chiefs.id'), nullable=False)
-    session = Column(Integer, nullable=False)
-    position = Column(Integer, nullable=False)
-    lap_time = Column(Numeric(2, 3), nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    race_id = db.Column(db.String(50), db.ForeignKey('races.id'), nullable=False)
+    driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
+    team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
+    car_id = db.Column(db.String(50), db.ForeignKey('cars.id'), nullable=False)
+    crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
+    session = db.Column(db.Integer, nullable=False)
+    position = db.Column(db.Integer, nullable=False)
+    lap_time = db.Column(db.Numeric(2, 3), nullable=False)
