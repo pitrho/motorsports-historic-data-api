@@ -23,8 +23,8 @@ class Team(db.Model):
     #crew_chief_id = Column(String(50), ForeignKey('crew_chiefs.id'),
     #                       nullable=False)
 
-    drivers = db.relationship('Driver', secondary='drivers_teams_cars')
-    cars = db.relationship('Car', secondary='drivers_teams_cars')
+    #drivers = db.relationship('Driver', secondary='drivers_teams_cars')
+    #cars = db.relationship('Car', secondary='drivers_teams_cars')
 
 
 class CrewChief(db.Model):
@@ -68,7 +68,7 @@ class TeamStanding(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
-    car_id = db.Column(db.String(50), db.ForeignKey('cars.id'), nullable=False)
+    car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
     season = db.Column(db.Integer, nullable=False)
     position = db.Column(db.Integer, nullable=False)
     points = db.Column(db.Integer, nullable=False)
@@ -104,7 +104,7 @@ class Race(db.Model):
     state = db.Column(db.String(2), nullable=False)
     date = db.Column(db.DateTime, nullable=False)
     laps = db.Column(db.Integer, nullable=False)
-    length = db.Column(db.Numeric(2, 3), nullable=False)
+    length = db.Column(db.Numeric(3, 3), nullable=False)
     distance = db.Column(db.Numeric(5, 1), nullable=False)
     race_type = db.Column(db.String(5), db.ForeignKey('race_types.id'), nullable=False)
     race_series = db.Column(db.String(5), db.ForeignKey('race_series.id'), nullable=False)
@@ -130,7 +130,7 @@ class RaceStanding(db.Model):
     lead_changes = db.Column(db.Integer, nullable=False)
     pole_speed = db.Column(db.Numeric(3, 3), nullable=False)
     avg_speed = db.Column(db.Numeric(3, 3), nullable=False)
-    victory_margin = db.Column(db.Numeric(1, 3), nullable=False)
+    victory_margin = db.Column(db.Numeric(3, 3), nullable=False)
 
 
 class RaceEntryType(db.Model):
@@ -149,7 +149,7 @@ class RaceEntry(db.Model):
     race_id = db.Column(db.String(50), db.ForeignKey('races.id'), nullable=False)
     driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
     team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
-    car_id = db.Column(db.String(50), db.ForeignKey('cars.id'), nullable=False)
+    car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
     crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
     entry_type = db.Column(db.Integer, db.ForeignKey('race_entry_types.id'), nullable=False)
 
@@ -162,7 +162,7 @@ class RaceResult(db.Model):
     race_id = db.Column(db.String(50), db.ForeignKey('races.id'), nullable=False)
     driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
     team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
-    car_id = db.Column(db.String(50), db.ForeignKey('cars.id'), nullable=False)
+    car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
     crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
     sponsor = db.Column(db.String(100), nullable=False)
     grid = db.Column(db.Integer, nullable=False)
@@ -182,10 +182,10 @@ class QualifyingResult(db.Model):
     race_id = db.Column(db.String(50), db.ForeignKey('races.id'), nullable=False)
     driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
     team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
-    car_id = db.Column(db.String(50), db.ForeignKey('cars.id'), nullable=False)
+    car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
     crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
     position = db.Column(db.Integer, nullable=False)
-    lap_time = db.Column(db.Numeric(2, 3), nullable=False)
+    lap_time = db.Column(db.Numeric(3, 3), nullable=False)
 
 
 class PracticeResult(db.Model):
@@ -196,8 +196,8 @@ class PracticeResult(db.Model):
     race_id = db.Column(db.String(50), db.ForeignKey('races.id'), nullable=False)
     driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
     team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
-    car_id = db.Column(db.String(50), db.ForeignKey('cars.id'), nullable=False)
+    car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
     crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
     session = db.Column(db.Integer, nullable=False)
     position = db.Column(db.Integer, nullable=False)
-    lap_time = db.Column(db.Numeric(2, 3), nullable=False)
+    lap_time = db.Column(db.Numeric(3, 3), nullable=False)
