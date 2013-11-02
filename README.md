@@ -14,7 +14,7 @@ and structure them as described in
 * [Flask](http://flask.pocoo.org/) for the application framework;
 * [Flask-SQLAlchemy](http://pythonhosted.org/Flask-SQLAlchemy/) for the ORM;
 * [Flask-Script](http://flask-script.readthedocs.org/en/latest/) for management scripts;
-* [Alembic](https://alembic.readthedocs.org/en/latest/) for schema migrations;
+* [Alembic](https://alembic.readthedocs.org/en/latest/) and [Flask-Migrate](https://github.com/miguelgrinberg/flask-migrate/) for schema migrations;
 
 ### Random stuff
 
