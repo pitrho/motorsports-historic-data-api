@@ -3,6 +3,14 @@ from flask.ext.sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
+class Series(db.Model):
+
+    __tablename__ = 'series'
+
+    id = db.Column(db.String(5), primary_key=True)
+    description = db.Column(db.String(50), nullable=True)
+
+
 class Driver(db.Model):
 
     __tablename__ = 'drivers'
@@ -10,6 +18,9 @@ class Driver(db.Model):
     id = db.Column(db.String(50), primary_key=True)
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
+    country = db.Column(db.String(50), nullable=False)
+
+    races = db.relationship('Race', secondary='race_results')
 
 
 class Team(db.Model):
@@ -75,22 +86,6 @@ class TeamStanding(db.Model):
     poles = db.Column(db.Integer, nullable=False)
 
 
-class RaceType(db.Model):
-
-    __tablename__ = 'race_types'
-
-    id = db.Column(db.String(5), primary_key=True)
-    description = db.Column(db.String(50), nullable=True)
-
-
-class RaceSeries(db.Model):
-
-    __tablename__ = 'race_series'
-
-    id = db.Column(db.String(5), primary_key=True)
-    description = db.Column(db.String(50), nullable=True)
-
-
 class Race(db.Model):
 
     __tablename__ = 'races'
@@ -106,11 +101,20 @@ class Race(db.Model):
     laps = db.Column(db.Integer, nullable=False)
     length = db.Column(db.Numeric(3, 3), nullable=False)
     distance = db.Column(db.Numeric(5, 1), nullable=False)
-    race_type = db.Column(db.String(5), db.ForeignKey('race_types.id'), nullable=False)
-    race_series = db.Column(db.String(5), db.ForeignKey('race_series.id'), nullable=False)
+    series = db.Column(db.String(5), db.ForeignKey('series.id'), nullable=False)
+
+    race_types = db.relationship('RaceType', secondary='races_types')
 
 
-class RacesTypes():
+class RaceType(db.Model):
+
+    __tablename__ = 'race_types'
+
+    id = db.Column(db.String(5), primary_key=True)
+    description = db.Column(db.String(50), nullable=True)
+
+
+class RacesTypes(db.Model):
 
     __tablename__ = 'races_types'
 
