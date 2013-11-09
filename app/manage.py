@@ -1,9 +1,10 @@
 import os
 from flask import Flask
 from flask.ext.migrate import Migrate, MigrateCommand
-from flask.ext.restful import Api  # reqparse, abort, Api, Resource
+from flask.ext.restful import Api
 from flask.ext.script import Manager, Server, Shell
 from models import db
+from controllers import DriverList
 
 
 def create_app(env_config):
@@ -12,10 +13,24 @@ def create_app(env_config):
     app = Flask(__name__, template_folder="templates")
     app.config.update(env_config)
 
+    #configure database
+    db.init_app(app)
+
     #create restful API objet
     api = Api(app)
 
+    #add api routes
+    api.add_resource(DriverList,
+                     '/api/drivers',
+                     '/api/<string:series>/drivers',
+                     '/api/<string:series>/<string:season>/drivers',
+                     endpoint='drivers')
+
     return app
+
+
+def create_and_config_app():
+    return create_app(get_config_from_env())
 
 
 def create_manager(env_config):
