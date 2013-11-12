@@ -4,7 +4,7 @@ from flask.ext.migrate import Migrate, MigrateCommand
 from flask.ext.restful import Api
 from flask.ext.script import Manager, Server, Shell
 from models import db
-from controllers import DriverList
+from controllers import DriverList, TeamList
 
 
 def create_app(env_config):
@@ -25,6 +25,12 @@ def create_app(env_config):
                      '/api/<string:series>/drivers',
                      '/api/<string:series>/<string:season>/drivers',
                      endpoint='drivers')
+
+    api.add_resource(TeamList,
+                     '/api/teams',
+                     '/api/<string:series>/teams',
+                     '/api/<string:series>/<string:season>/teams',
+                     endpoint='teams')
 
     return app
 

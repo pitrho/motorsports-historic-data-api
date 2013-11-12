@@ -31,6 +31,9 @@ class Team(db.Model):
     name = db.Column(db.String(50), nullable=False)
     alias = db.Column(db.String(50), nullable=False)
     owner = db.Column(db.String(100), nullable=False)
+
+    races = db.relationship('Race', secondary='race_results')
+
     #crew_chief_id = Column(String(50), ForeignKey('crew_chiefs.id'),
     #                       nullable=False)
 

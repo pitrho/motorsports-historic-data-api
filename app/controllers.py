@@ -1,5 +1,5 @@
 from flask.ext.restful import Resource, fields, marshal
-from models import Driver, Race
+from models import Driver, Team, Race
 
 
 class DriverList(Resource):
@@ -20,20 +20,49 @@ class DriverList(Resource):
         '''
 
         # /api/drivers
-        if series is None and season is None:
-            drivers = Driver.query.all()
+        #if series is None and season is None:
+            #drivers = Driver.query.all()
+        drivers = Driver.query
 
         # /api/series/drivers
-        elif series is not None and season is None:
-            drivers = Driver.query.\
-                join(Driver.races).\
-                filter(Race.series == series).all()
+        if series:
+            drivers = drivers.join(Driver.races).\
+                filter(Race.series == series)
 
         # /api/series/season/drivers
-        elif series is not None and season is not None:
-            drivers = Driver.query.\
-                join(Driver.races).\
-                filter(Race.series == series).\
-                filter(Race.season == season).all()
+        if season:
+            drivers = drivers.filter(Race.season == season)
 
-        return {'drivers': marshal(drivers, self.drivers_fields)}
+        return {'drivers': marshal(drivers.all(), self.drivers_fields)}
+
+
+class TeamList(Resource):
+
+    teams_fields = {
+        'id': fields.String,
+        'name': fields.String,
+        'alias': fields.String,
+        'owner': fields.String
+    }
+
+    def get(self, series=None, season=None):
+        '''
+        Handles routes
+        /api/teams                  All teams
+        /api/series/teams           Teams from a series
+        /api/series/season/teams    Teams from a series and season
+        '''
+
+        # /api/teams
+        teams = Team.query
+
+        # /api/series/drivers
+        if series:
+            teams = teams.join(Team.races).\
+                filter(Race.series == series)
+
+        # /api/series/season/drivers
+        if season:
+            teams = teams.filter(Race.season == season)
+
+        return {'teams': marshal(teams.all(), self.teams_fields)}
