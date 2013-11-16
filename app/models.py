@@ -48,6 +48,8 @@ class CrewChief(db.Model):
     id = db.Column(db.String(50), primary_key=True)
     name = db.Column(db.String(100), nullable=False)
 
+    races = db.relationship('Race', secondary='race_results')
+
 
 class Car(db.Model):
 

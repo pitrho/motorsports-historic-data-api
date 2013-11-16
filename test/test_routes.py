@@ -220,5 +220,29 @@ class TeamListTests(BaseTest):
         self.assertEquals(response.json, expect)
 
 
+class CrewChiefTests(BaseTest):
+
+    def test_no_crew_chiefs(self):
+        '''should return no crew chiefs'''
+
+        response = self.client.get('/api/crewchiefs')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(crewchiefs=[]))
+
+    def test_all_crew_chiefs(self):
+        '''should return all crew chiefs'''
+
+        cc1 = CrewChief(id='cc1', name='Crew Chief 1')
+        cc2 = CrewChief(id='cc2', name='Crew Chief 2')
+        db.session.add_all([cc1, cc2])
+        db.session.commit()
+
+        response = self.client.get('/api/crewchiefs')
+        expect = {u'crewchiefs': [{u'id': u'cc1', u'name': u'Crew Chief 1'},
+                                  {u'id': u'cc2', u'name': u'Crew Chief 2'}]}
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, expect)
+
+
 if __name__ == '__main__':
     nose.main()
