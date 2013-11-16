@@ -57,7 +57,9 @@ class Car(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     number = db.Column(db.Integer, nullable=False)
-    type = db.Column(db.String(50), nullable=False)
+    car_type = db.Column(db.String(50), nullable=False)
+
+    races = db.relationship('Race', secondary='race_results')
 
 
 class DriverStanding(db.Model):

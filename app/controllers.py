@@ -1,5 +1,5 @@
 from flask.ext.restful import Resource, fields, marshal
-from models import Driver, Team, CrewChief, Race
+from models import Driver, Team, CrewChief, Car, Race
 
 
 class DriverList(Resource):
@@ -97,3 +97,33 @@ class CrewChiefList(Resource):
 
         return {'crewchiefs': marshal(crewchiefs.all(), self.crewchief_fields)}
 
+
+class CarList(Resource):
+
+    crewchief_fields = {
+        'id': fields.String,
+        'number': fields.String,
+        'car_type': fields.String
+    }
+
+    def get(self, series=None, season=None):
+        '''
+        Handles routes
+        /api/cars                 All teams
+        /api/series/cars          Teams from a series
+        /api/series/season/cars   Teams from a series and season
+        '''
+
+        # /api/cars
+        cars = Car.query
+
+        # /api/series/crewchiefs
+        if series:
+            cars = cars.join(Car.races).\
+                filter(Race.series == series)
+
+        # /api/series/season/crewchiefs
+        if season:
+            cars = cars.filter(Race.season == season)
+
+        return {'cars': marshal(cars.all(), self.crewchief_fields)}
