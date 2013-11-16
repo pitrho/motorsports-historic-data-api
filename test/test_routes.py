@@ -243,6 +243,84 @@ class CrewChiefTests(BaseTest):
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
+    def test_crew_chiefs_by_series(self):
+        '''should return crew chiefs on a given series'''
+
+        s1 = Series(id='s1', description='series 1')
+        db.session.add(s1)
+        db.session.commit()
+
+        race1 = Race(id='race1', name='Race 1', season=2013, site='Site 1',
+                     circuit_name='Circuit 1', city='City 1', state='ST',
+                     date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
+                     series=s1.id)
+        db.session.add(race1)
+        db.session.commit()
+
+        cc1 = CrewChief(id='cc1', name='Crew Chief 1')
+        cc2 = CrewChief(id='cc2', name='Crew Chief 2')
+        db.session.add_all([cc1, cc2])
+        db.session.commit()
+
+        t1 = Team(id='t1', name='Team 1', alias='team1', owner='owner 1')
+        d1 = Driver(id='d1', first_name='driver', last_name='1', country='USA')
+        car1 = Car(number='1', type='Ford')
+        db.session.add_all([t1, d1, car1])
+        db.session.commit()
+
+        rr1 = RaceResult(race_id=race1.id, driver_id=d1.id, team_id=t1.id,
+                         car_id=car1.id, crew_chief_id=cc1.id, sponsor='sponsor',
+                         grid=2, position=1, laps=350, status='Finished',
+                         laps_led=200, points=0, money=0)
+        db.session.add(rr1)
+        db.session.commit()
+
+        response = self.client.get('/api/s1/crewchiefs')
+        expect = {u'crewchiefs': [{u'id': u'cc1', u'name': u'Crew Chief 1'}]}
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, expect)
+
+    def test_crew_chiefs_by_series_and_season(self):
+        '''should return crew chiefs on a given series and season'''
+
+        s1 = Series(id='s1', description='series 1')
+        db.session.add(s1)
+        db.session.commit()
+
+        race1 = Race(id='race1', name='Race 1', season=2013, site='Site 1',
+                     circuit_name='Circuit 1', city='City 1', state='ST',
+                     date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
+                     series=s1.id)
+        db.session.add(race1)
+        db.session.commit()
+
+        cc1 = CrewChief(id='cc1', name='Crew Chief 1')
+        cc2 = CrewChief(id='cc2', name='Crew Chief 2')
+        db.session.add_all([cc1, cc2])
+        db.session.commit()
+
+        t1 = Team(id='t1', name='Team 1', alias='team1', owner='owner 1')
+        d1 = Driver(id='d1', first_name='driver', last_name='1', country='USA')
+        car1 = Car(number='1', type='Ford')
+        db.session.add_all([t1, d1, car1])
+        db.session.commit()
+
+        rr1 = RaceResult(race_id=race1.id, driver_id=d1.id, team_id=t1.id,
+                         car_id=car1.id, crew_chief_id=cc1.id, sponsor='sponsor',
+                         grid=2, position=1, laps=350, status='Finished',
+                         laps_led=200, points=0, money=0)
+        db.session.add(rr1)
+        db.session.commit()
+
+        response = self.client.get('/api/s1/2012/crewchiefs')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(crewchiefs=[]))
+
+        response = self.client.get('/api/s1/2013/crewchiefs')
+        expect = {u'crewchiefs': [{u'id': u'cc1', u'name': u'Crew Chief 1'}]}
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, expect)
+
 
 if __name__ == '__main__':
     nose.main()
