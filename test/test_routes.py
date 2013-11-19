@@ -516,5 +516,51 @@ class TeamStandingsListTests(BaseTest):
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
+
+class RaceListTests(BaseTest):
+
+    def test_no_races(self):
+        '''should return no races'''
+
+        response = self.client.get('/api/s1/2013/races')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(races=[]))
+
+    def test_races_by_series_and_season(self):
+        '''should return all races on a given series and season'''
+
+        s1 = Series(id='s1', description='series 1')
+        db.session.add(s1)
+        db.session.commit()
+
+        race1 = Race(id='race1', name='Race 1', season=2012, site='Site 1',
+                     circuit_name='Circuit 1', city='City 1', state='ST',
+                     date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
+                     series=s1.id)
+        race2 = Race(id='race2', name='Race 2', season=2013, site='Site 2',
+                     circuit_name='Circuit 2', city='City 2', state='ST',
+                     date=datetime.datetime.now(), laps=370, length=1.6, distance=550,
+                     series=s1.id)
+        race3 = Race(id='race3', name='Race 3', season=2013, site='Site 3',
+                     circuit_name='Circuit 3', city='City 3', state='ST',
+                     date=datetime.datetime.now(), laps=400, length=1.7, distance=570,
+                     series=s1.id)
+        db.session.add_all([race1, race2, race3])
+        db.session.commit()
+
+        response = self.client.get('/api/s1/2013/races')
+        expect = {u'races': [{u'id': u'race2', u'name': u'Race 2', u'season': 2013,
+                              u'site': u'Site 2', u'circuit_name': u'Circuit 2',
+                              u'city': u'City 2', u'state': 'ST', u'date': str(race2.date),
+                              u'laps': 370, u'length': u'1.600', u'distance': u'550.0',
+                              u'series': u's1'},
+                             {u'id': u'race3', u'name': u'Race 3', u'season': 2013,
+                              u'site': u'Site 3', u'circuit_name': u'Circuit 3',
+                              u'city': u'City 3', u'state': 'ST', u'date': str(race3.date),
+                              u'laps': 400, u'length': u'1.700', u'distance': u'570.0',
+                              u'series': u's1'}]}
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, expect)
+
 if __name__ == '__main__':
     nose.main()

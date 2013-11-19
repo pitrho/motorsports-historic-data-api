@@ -191,3 +191,37 @@ class TeamStandingsList(Resource):
             return {'teamstandings': marshal(teamstandings.all(), self.team_standings_fields)}
 
         return {'teamstandings': []}
+
+
+class RaceList(Resource):
+
+    race_fields = {
+        'id': fields.String,
+        'name': fields.String,
+        'season': fields.Integer,
+        'site': fields.String,
+        'circuit_name': fields.String,
+        'city': fields.String,
+        'state': fields.String,
+        'date': fields.String,
+        'laps': fields.Integer,
+        'length': fields.Arbitrary,
+        'distance': fields.Arbitrary,
+        'series': fields.String
+    }
+
+    def get(self, series=None, season=None):
+        '''
+        Handles routes
+        /api/series/season/races  Races from a series and season
+        '''
+
+        # /api/series/season/races
+        if series is not None and season is not None:
+            races = Race.query.\
+                filter(Race.series == series).\
+                filter(Race.season == season).\
+                order_by(Race.date.asc())
+            return {'races': marshal(races.all(), self.race_fields)}
+
+        return {'races': []}

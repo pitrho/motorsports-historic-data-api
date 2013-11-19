@@ -108,7 +108,7 @@ class Race(db.Model):
     state = db.Column(db.String(2), nullable=False)
     date = db.Column(db.DateTime, nullable=False)
     laps = db.Column(db.Integer, nullable=False)
-    length = db.Column(db.Numeric(3, 3), nullable=False)
+    length = db.Column(db.Numeric(5, 3), nullable=False)
     distance = db.Column(db.Numeric(5, 1), nullable=False)
     series = db.Column(db.String(5), db.ForeignKey('series.id'), nullable=False)
 
