@@ -423,5 +423,53 @@ class CarListTests(BaseTest):
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
+
+class DriverStandingsListTests(BaseTest):
+
+    def test_no_driver_standings(self):
+        '''should return no driver standings'''
+
+        response = self.client.get('/api/s1/2013/driverstandings')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(driverstandings=[]))
+
+    def test_all_cars(self):
+        '''should return all driver standings on a given series and season'''
+
+        s1 = Series(id='s1', description='series 1')
+        db.session.add(s1)
+        db.session.commit()
+
+        d1 = Driver(id='d1', first_name='driver', last_name='1', country='USA')
+        d2 = Driver(id='d2', first_name='driver', last_name='2', country='USA')
+        db.session.add_all([d1, d2])
+        db.session.commit()
+
+        car1 = Car(number='1', car_type='Ford')
+        car2 = Car(number='2', car_type='Chevy')
+        db.session.add_all([car1, car2])
+        db.session.commit()
+
+        ds1 = DriverStanding(driver_id=d1.id, car_id=car1.id, series=s1.id,
+                             season=2013, position=1, points=500, poles=5,
+                             wins=5, starts=10, dnfs=0, top5=7, top10=10)
+        ds2 = DriverStanding(driver_id=d2.id, car_id=car2.id, series=s1.id,
+                             season=2013, position=2, points=450, poles=3,
+                             wins=3, starts=10, dnfs=1, top5=7, top10=8)
+        db.session.add_all([ds1, ds2])
+        db.session.commit()
+
+        response = self.client.get('/api/s1/2013/driverstandings')
+        expect = {u'driverstandings': [{u'id': u'1', u'driver_id': '1', u'car_id': u'1',
+                                        u'series': u's1', u'season': u'2013', u'position': u'1',
+                                        u'points': u'500', u'poles': u'5', u'wins': u'5',
+                                        u'starts': u'10', u'dnfs': u'0', u'top5': u'7', u'top10': u'10'},
+                                       {u'id': u'2', u'driver_id': '2', u'car_id': u'2',
+                                        u'series': u's1', u'season': u'2013', u'position': u'2',
+                                        u'points': u'450', u'poles': u'3', u'wins': u'3',
+                                        u'starts': u'10', u'dnfs': u'1', u'top5': u'7', u'top10': u'8'}]}
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, expect)
+
 if __name__ == '__main__':
     nose.main()

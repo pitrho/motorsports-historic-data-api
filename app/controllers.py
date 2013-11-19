@@ -1,5 +1,5 @@
 from flask.ext.restful import Resource, fields, marshal
-from models import Driver, Team, CrewChief, Car, Race
+from models import Driver, Team, CrewChief, Car, DriverStanding, Race
 
 
 class DriverList(Resource):
@@ -78,9 +78,9 @@ class CrewChiefList(Resource):
     def get(self, series=None, season=None):
         '''
         Handles routes
-        /api/crewchiefs                 All teams
-        /api/series/crewcheifs          Teams from a series
-        /api/series/season/crewchiefs   Teams from a series and season
+        /api/crewchiefs                 All crew cheifs
+        /api/series/crewcheifs          Crew cheifs from a series
+        /api/series/season/crewchiefs   Crew cheifs from a series and season
         '''
 
         # /api/crewchiefs
@@ -100,7 +100,7 @@ class CrewChiefList(Resource):
 
 class CarList(Resource):
 
-    crewchief_fields = {
+    car_fields = {
         'id': fields.String,
         'number': fields.String,
         'car_type': fields.String
@@ -109,9 +109,9 @@ class CarList(Resource):
     def get(self, series=None, season=None):
         '''
         Handles routes
-        /api/cars                 All teams
-        /api/series/cars          Teams from a series
-        /api/series/season/cars   Teams from a series and season
+        /api/cars                 All cars
+        /api/series/cars          Cars from a series
+        /api/series/season/cars   Cars from a series and season
         '''
 
         # /api/cars
@@ -126,4 +126,37 @@ class CarList(Resource):
         if season:
             cars = cars.filter(Race.season == season)
 
-        return {'cars': marshal(cars.all(), self.crewchief_fields)}
+        return {'cars': marshal(cars.all(), self.car_fields)}
+
+
+class DriverStandingsList(Resource):
+
+    driver_standings_fields = {
+        'id': fields.String,
+        'driver_id': fields.String,
+        'car_id': fields.Integer,
+        'season': fields.Integer,
+        'position': fields.Integer,
+        'points': fields.Integer,
+        'poles': fields.Integer,
+        'wins': fields.Integer,
+        'starts': fields.Integer,
+        'dnfs': fields.Integer,
+        'top5': fields.Integer,
+        'top10': fields.Integer
+    }
+
+    def get(self, series=None, season=None):
+        '''
+        Handles routes
+        /api/series/season/driverstandings  Driver standings from a series and season
+        '''
+
+        # /api/series/season/driverstandings
+        if series is not None and season is not None:
+            driverstandings = DriverStanding.query.\
+                filter(DriverStanding.series == series).\
+                filter(DriverStanding.season == season)
+            return {'driverstandings': marshal(driverstandings.all(), self.driver_standings_fields)}
+
+        return {'driverstandings': []}
