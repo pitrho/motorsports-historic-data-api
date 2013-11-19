@@ -132,9 +132,10 @@ class CarList(Resource):
 class DriverStandingsList(Resource):
 
     driver_standings_fields = {
-        'id': fields.String,
+        'id': fields.Integer,
         'driver_id': fields.String,
         'car_id': fields.Integer,
+        'series': fields.String,
         'season': fields.Integer,
         'position': fields.Integer,
         'points': fields.Integer,

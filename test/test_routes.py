@@ -460,14 +460,14 @@ class DriverStandingsListTests(BaseTest):
         db.session.commit()
 
         response = self.client.get('/api/s1/2013/driverstandings')
-        expect = {u'driverstandings': [{u'id': u'1', u'driver_id': '1', u'car_id': u'1',
-                                        u'series': u's1', u'season': u'2013', u'position': u'1',
-                                        u'points': u'500', u'poles': u'5', u'wins': u'5',
-                                        u'starts': u'10', u'dnfs': u'0', u'top5': u'7', u'top10': u'10'},
-                                       {u'id': u'2', u'driver_id': '2', u'car_id': u'2',
-                                        u'series': u's1', u'season': u'2013', u'position': u'2',
-                                        u'points': u'450', u'poles': u'3', u'wins': u'3',
-                                        u'starts': u'10', u'dnfs': u'1', u'top5': u'7', u'top10': u'8'}]}
+        expect = {u'driverstandings': [{u'id': 1, u'driver_id': u'd1', u'car_id': 1,
+                                        u'series': u's1', u'season': 2013, u'position': 1,
+                                        u'points': 500, u'poles': 5, u'wins': 5,
+                                        u'starts': 10, u'dnfs': 0, u'top5': 7, u'top10': 10},
+                                       {u'id': 2, u'driver_id': u'd2', u'car_id': 2,
+                                        u'series': u's1', u'season': 2013, u'position': 2,
+                                        u'points': 450, u'poles': 3, u'wins': 3,
+                                        u'starts': 10, u'dnfs': 1, u'top5': 7, u'top10': 8}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
