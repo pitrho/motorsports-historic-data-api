@@ -3,7 +3,7 @@ import datetime
 from flask.ext.testing import TestCase
 from app.manage import create_and_config_app, db
 from app.models import Series, Driver, Team, CrewChief, Car, DriverStanding,\
-    TeamStanding, Race, RaceResult
+    TeamStanding, Race, RaceResult, RaceStanding
 
 
 class BaseTest(TestCase):
@@ -561,6 +561,52 @@ class RaceListTests(BaseTest):
                               u'series': u's1'}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
+
+
+class RaceStandingListTests(BaseTest):
+
+    def test_no_races(self):
+        '''should return no race standings'''
+
+        response = self.client.get('/api/racestandings/r1')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(racestandings=[]))
+
+    def test_races_standings_by_race(self):
+        '''should return the race standings for a given race'''
+
+        self.maxDiff = None
+
+        s1 = Series(id='s1', description='series 1')
+        db.session.add(s1)
+        db.session.commit()
+
+        race1 = Race(id='race1', name='Race 1', season=2013, site='Site 1',
+                     circuit_name='Circuit 1', city='City 1', state='ST',
+                     date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
+                     series=s1.id)
+        race2 = Race(id='race2', name='Race 2', season=2013, site='Site 2',
+                     circuit_name='Circuit 2', city='City 2', state='ST',
+                     date=datetime.datetime.now(), laps=370, length=1.6, distance=550,
+                     series=s1.id)
+
+        db.session.add_all([race1, race2])
+        db.session.commit()
+
+        rs1 = RaceStanding(race_id=race1.id, race_time=datetime.datetime.now().time(),
+                           caution_flags=5, caution_flag_laps=30, lead_changes=20,
+                           pole_speed=100, avg_speed=90, victory_margin=1.2)
+        db.session.add(rs1)
+        db.session.commit()
+
+        response = self.client.get('/api/racestandings/race1')
+        expect = {u'racestandings': [{u'race_id': u'race1', u'race_time': str(rs1.race_time),
+                                      u'caution_flags': 5, u'caution_flag_laps': 30,
+                                      u'lead_changes': 20, u'pole_speed': u'100.000',
+                                      u'avg_speed': u'90.000', u'victory_margin': u'1.200'}]}
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, expect)
+
 
 if __name__ == '__main__':
     nose.main()

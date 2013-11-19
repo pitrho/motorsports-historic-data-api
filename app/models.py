@@ -141,9 +141,9 @@ class RaceStanding(db.Model):
     caution_flags = db.Column(db.Integer, nullable=False)
     caution_flag_laps = db.Column(db.Integer, nullable=False)
     lead_changes = db.Column(db.Integer, nullable=False)
-    pole_speed = db.Column(db.Numeric(3, 3), nullable=False)
-    avg_speed = db.Column(db.Numeric(3, 3), nullable=False)
-    victory_margin = db.Column(db.Numeric(3, 3), nullable=False)
+    pole_speed = db.Column(db.Numeric(6, 3), nullable=False)
+    avg_speed = db.Column(db.Numeric(6, 3), nullable=False)
+    victory_margin = db.Column(db.Numeric(6, 3), nullable=False)
 
 
 class RaceEntryType(db.Model):
