@@ -2,7 +2,8 @@ import nose
 import datetime
 from flask.ext.testing import TestCase
 from app.manage import create_and_config_app, db
-from app.models import *
+from app.models import Series, Driver, Team, CrewChief, Car, DriverStanding,\
+    TeamStanding, Race, RaceResult
 
 
 class BaseTest(TestCase):
@@ -433,7 +434,7 @@ class DriverStandingsListTests(BaseTest):
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(driverstandings=[]))
 
-    def test_all_cars(self):
+    def test_all_driver_standings(self):
         '''should return all driver standings on a given series and season'''
 
         s1 = Series(id='s1', description='series 1')
@@ -468,6 +469,50 @@ class DriverStandingsListTests(BaseTest):
                                         u'series': u's1', u'season': 2013, u'position': 2,
                                         u'points': 450, u'poles': 3, u'wins': 3,
                                         u'starts': 10, u'dnfs': 1, u'top5': 7, u'top10': 8}]}
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, expect)
+
+
+class TeamStandingsListTests(BaseTest):
+
+    def test_no_team_standings(self):
+        '''should return no team standings'''
+
+        response = self.client.get('/api/s1/2013/teamstandings')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(teamstandings=[]))
+
+    def test_all_team_standings(self):
+        '''should return all team standings on a given series and season'''
+
+        s1 = Series(id='s1', description='series 1')
+        db.session.add(s1)
+        db.session.commit()
+
+        t1 = Team(id='t1', name='Team 1', alias='team1', owner='owner 1')
+        t2 = Team(id='t2', name='Team 2', alias='team2', owner='owner 2')
+        db.session.add_all([t1, t2])
+        db.session.commit()
+
+        car1 = Car(number='1', car_type='Ford')
+        car2 = Car(number='2', car_type='Chevy')
+        db.session.add_all([car1, car2])
+        db.session.commit()
+
+        ts1 = TeamStanding(team_id=t1.id, car_id=car1.id, series=s1.id,
+                           season=2013, position=1, points=500, poles=5)
+        ts2 = TeamStanding(team_id=t2.id, car_id=car2.id, series=s1.id,
+                           season=2013, position=2, points=450, poles=3)
+        db.session.add_all([ts1, ts2])
+        db.session.commit()
+
+        response = self.client.get('/api/s1/2013/teamstandings')
+        expect = {u'teamstandings': [{u'id': 1, u'team_id': u't1', u'car_id': 1,
+                                      u'series': u's1', u'season': 2013, u'position': 1,
+                                      u'points': 500, u'poles': 5},
+                                     {u'id': 2, u'team_id': u't2', u'car_id': 2,
+                                      u'series': u's1', u'season': 2013, u'position': 2,
+                                      u'points': 450, u'poles': 3}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 

@@ -1,5 +1,6 @@
 from flask.ext.restful import Resource, fields, marshal
-from models import Driver, Team, CrewChief, Car, DriverStanding, Race
+from models import Driver, Team, CrewChief, Car, DriverStanding, Race, \
+    TeamStanding
 
 
 class DriverList(Resource):
@@ -161,3 +162,32 @@ class DriverStandingsList(Resource):
             return {'driverstandings': marshal(driverstandings.all(), self.driver_standings_fields)}
 
         return {'driverstandings': []}
+
+
+class TeamStandingsList(Resource):
+
+    team_standings_fields = {
+        'id': fields.Integer,
+        'team_id': fields.String,
+        'car_id': fields.Integer,
+        'series': fields.String,
+        'season': fields.Integer,
+        'position': fields.Integer,
+        'points': fields.Integer,
+        'poles': fields.Integer
+    }
+
+    def get(self, series=None, season=None):
+        '''
+        Handles routes
+        /api/series/season/teamstandings  Team standings from a series and season
+        '''
+
+        # /api/series/season/teamstandings
+        if series is not None and season is not None:
+            teamstandings = TeamStanding.query.\
+                filter(TeamStanding.series == series).\
+                filter(TeamStanding.season == season)
+            return {'teamstandings': marshal(teamstandings.all(), self.team_standings_fields)}
+
+        return {'teamstandings': []}

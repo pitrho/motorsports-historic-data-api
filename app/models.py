@@ -88,6 +88,7 @@ class TeamStanding(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
     car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
+    series = db.Column(db.String(5), db.ForeignKey('series.id'), nullable=False)
     season = db.Column(db.Integer, nullable=False)
     position = db.Column(db.Integer, nullable=False)
     points = db.Column(db.Integer, nullable=False)
