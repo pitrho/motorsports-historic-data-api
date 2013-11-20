@@ -9,8 +9,8 @@ from app.models import Series, Driver, Team, CrewChief, Car, DriverStanding,\
 class BaseTest(TestCase):
 
     def create_app(self):
-        config = {'SQLALCHEMY_DATABASE_URI': "sqlite:///:memory:"}
-        app = create_and_config_app(config)
+        overrides = {}
+        app = create_and_config_app(overrides)
         return app
 
     def setUp(self):
@@ -19,6 +19,7 @@ class BaseTest(TestCase):
     def tearDown(self):
         db.session.remove()
         db.drop_all()
+        db.get_engine(self.app).dispose()
 
 
 class DriverListTests(BaseTest):
