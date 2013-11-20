@@ -72,7 +72,7 @@ Follow steps at Heroku.com
 We use [nose](http://nose.readthedocs.org/en/latest/) for running tests.
 To run the full test suite make sure Postgres is running then use:
 
-	honcho run nosetests -v test
+	nosetests -v test
 
 The testing database is `postgresql://localhost/historic_api_test` by
 default and can be overridden by specifying the `TEST_DATABASE_URL` variable in your environment.
