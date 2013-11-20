@@ -9,7 +9,9 @@ from app.models import Series, Driver, Team, CrewChief, Car, DriverStanding,\
 class BaseTest(TestCase):
 
     def create_app(self):
-        return create_and_config_app()
+        config = {'SQLALCHEMY_DATABASE_URI': "sqlite:///:memory:"}
+        app = create_and_config_app(config)
+        return app
 
     def setUp(self):
         db.create_all()

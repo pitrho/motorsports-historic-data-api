@@ -64,8 +64,14 @@ def create_app(env_config):
     return app
 
 
-def create_and_config_app():
-    return create_app(get_config_from_env())
+def create_and_config_app(overloads=None):
+    """ Returns an application object grabbing configuration
+        from the environment and supplementing that with any
+        parameters passed in the `overloads` parameter.
+    """
+    config = get_config_from_env()
+    config.update(overloads)
+    return create_app(config)
 
 
 def create_manager(env_config):
