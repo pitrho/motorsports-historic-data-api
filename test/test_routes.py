@@ -9,7 +9,8 @@ from app.models import Series, Driver, Team, CrewChief, Car, DriverStanding,\
 class BaseTest(TestCase):
 
     def create_app(self):
-        return create_and_config_app()
+        self.app = create_and_config_app()
+        return self.app
 
     def setUp(self):
         db.create_all()
@@ -17,6 +18,7 @@ class BaseTest(TestCase):
     def tearDown(self):
         db.session.remove()
         db.drop_all()
+        db.get_engine(self.app).dispose()
 
 
 class DriverListTests(BaseTest):
