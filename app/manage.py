@@ -64,13 +64,12 @@ def create_app(env_config):
     return app
 
 
-def create_and_config_app(overloads=None):
+def create_and_config_app(overloads={}):
     """ Returns an application object grabbing configuration
         from the environment and supplementing that with any
         parameters passed in the `overloads` parameter.
     """
-    config = get_config_from_env()
-    config.update(overloads)
+    config = get_config_from_env(overloads)
     return create_app(config)
 
 
@@ -91,26 +90,31 @@ def create_manager(env_config):
     return manager
 
 
-def get_config_from_env():
-    env_config = {}
+def get_config_from_env(overloads={}):
 
-    #Keys for config dictionary
+    # Get our environment
+    full_env = dict(os.environ)
+    full_env.update(overloads)
+
+    # Empty config
+    config = {}
+
+    # Keys for config dictionary.  We'll only pull out
+    # things that are specified here.
     keys = (
         "DATABASE_URL",
         "DEBUG"
     )
 
     for key in keys:
-        if key in os.environ:
-            value = os.environ[key]
+        if key in full_env:
+            value = full_env[key]
             if value.lower() == 'true':
                 value = True
-            env_config[key] = value
+            config[key] = value
 
-    env_config['SQLALCHEMY_DATABASE_URI'] = env_config['DATABASE_URL']
-    env_config['BROKER_POOL_LIMIT'] = 5
-
-    return env_config
+    config['SQLALCHEMY_DATABASE_URI'] = config['DATABASE_URL']
+    return config
 
 if __name__ == '__main__':
     manager = create_manager(get_config_from_env())
