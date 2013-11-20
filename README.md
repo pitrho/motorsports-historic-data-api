@@ -1,6 +1,9 @@
 Motorsports historic data API
 =============================
 
+![Old car crash](https://s3.amazonaws.com/pitrho-misc-01/images/historic-api-header.jpg "Old car crash")
+
+
 An API for motorsports historical data, starting with NASCAR data.
 Data include lists of Drivers, Teams, and Crew Chiefs along with Team/Car Standings
 and Race lists. Most endpoints allow variable specificity from 'all', down to
