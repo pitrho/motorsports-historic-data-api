@@ -41,6 +41,9 @@ First, create your empty database.  From the shell:
 Then create the tables.
 
 	honcho run python ./app/manage.py database upgrade
+
+(If there is no `migrations` folder, which is the case early on, while we're trying to finalize the models, before you run upgrade you'll want to run the following.)
+
 	honcho run python ./app/manage.py database migrate
 
 
