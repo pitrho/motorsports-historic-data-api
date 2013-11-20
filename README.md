@@ -47,7 +47,7 @@ Then create the tables.
 	honcho run python ./app/manage.py database migrate
 
 
-# Local Development
+## Local Development
 After you have initialized the application per `API Configuration & Initial Setup`,
 running the API locally is easy:
 
@@ -102,7 +102,7 @@ and structure them as described in
 Python clone [honcho](https://github.com/nickstenning/honcho).
 
 
-## Packages commonly used at Pit Rho
+### Packages commonly used at Pit Rho
 
 * [Flask](http://flask.pocoo.org/) for the application framework;
 * [Flask-SQLAlchemy](http://pythonhosted.org/Flask-SQLAlchemy/) for the ORM;
