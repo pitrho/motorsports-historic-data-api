@@ -150,8 +150,8 @@ class RaceEntryType(db.Model):
 
     __tablename__ = 'race_entry_types'
 
-    id = db.Column(db.Integer, primary_key=True)
-    entry_type = db.Column(db.String(50), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    entry_type = db.Column(db.String(50), nullable=False)
 
 
 class RaceEntry(db.Model):
@@ -164,7 +164,7 @@ class RaceEntry(db.Model):
     team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
     car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
     crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
-    entry_type = db.Column(db.Integer, db.ForeignKey('race_entry_types.id'), nullable=False)
+    entry_type_id = db.Column(db.Integer, db.ForeignKey('race_entry_types.id'), nullable=False)
 
 
 class RaceResult(db.Model):
