@@ -1,6 +1,6 @@
 from flask.ext.restful import Resource, fields, marshal
 from models import Driver, Team, CrewChief, Car, DriverStanding, Race, \
-    TeamStanding, RaceStanding, RaceEntry
+    TeamStanding, RaceStanding, RaceEntry, RaceEntryType, RaceResult
 
 
 class DriverList(Resource):
@@ -292,20 +292,82 @@ class RaceEntryList(Resource):
         'crew_chief': fields.Nested(crew_chief_fields)
     }
 
-    def get(self, series=None, season=None, round=None):
+    def get(self, series=None, season=None, entry_type=None, round=None):
         '''
         Handles routes
-        /api/series/season/raceentry/race_id      Race entry list
+        /api/series/season/raceentry/entry_type/race_id      Race entry list
         '''
 
-        if series and season and round:
+        if series and season and entry_type and round:
             raceentry = RaceEntry.query.\
                 join(RaceEntry.race).\
+                join(RaceEntry.entry_type).\
                 filter(Race.series == series).\
                 filter(Race.season == season).\
                 filter(Race.round == round).\
-                filter(RaceEntry.entry_type_id == 1)
+                filter(RaceEntryType.entry_type == entry_type)
 
             return {'raceentry': marshal(raceentry.all(), self.race_entry_fields)}
 
         return {'raceentry': []}
+
+
+class RaceResultList(Resource):
+
+    race_fields = {
+        'id': fields.String,
+        'name': fields.String
+    }
+
+    driver_fields = {
+        'id': fields.String,
+        'first_name': fields.String,
+        'last_name': fields.String
+    }
+
+    team_fields = {
+        'id': fields.String,
+        'name': fields.String
+    }
+
+    car_fields = {
+        'number': fields.Integer,
+        'car_type': fields.String
+    }
+
+    crew_chief_fields = {
+        'id': fields.String,
+        'name': fields.String
+    }
+
+    race_entry_fields = {
+        'race': fields.Nested(race_fields),
+        'driver': fields.Nested(driver_fields),
+        'team': fields.Nested(team_fields),
+        'car': fields.Nested(car_fields),
+        'crew_chief': fields.Nested(crew_chief_fields),
+        'sponsor': fields.String,
+        'position': fields.Integer,
+        'laps': fields.Integer,
+        'status': fields.String,
+        'laps_led': fields.Integer,
+        'points': fields.Integer,
+        'money': fields.Arbitrary
+    }
+
+    def get(self, series=None, season=None, round=None):
+        '''
+        Handles routes
+        /api/series/season/raceresults/race_id      Race results list
+        '''
+
+        if series and season and round:
+            raceresults = RaceResult.query.\
+                join(RaceResult.race).\
+                filter(Race.series == series).\
+                filter(Race.season == season).\
+                filter(Race.round == round)
+
+            return {'raceresults': marshal(raceresults.all(), self.race_entry_fields)}
+
+        return {'raceresults': []}

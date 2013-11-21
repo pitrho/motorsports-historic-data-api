@@ -172,6 +172,7 @@ class RaceEntry(db.Model):
     team = db.relationship('Team')
     car = db.relationship('Car')
     crew_chief = db.relationship('CrewChief')
+    entry_type = db.relationship('RaceEntryType')
 
 
 class RaceResult(db.Model):
@@ -192,6 +193,12 @@ class RaceResult(db.Model):
     laps_led = db.Column(db.Integer, nullable=False)
     points = db.Column(db.Integer, nullable=False)
     money = db.Column(db.Numeric(10, 2), nullable=False)
+
+    race = db.relationship('Race')
+    driver = db.relationship('Driver')
+    team = db.relationship('Team')
+    car = db.relationship('Car')
+    crew_chief = db.relationship('CrewChief')
 
 
 class QualifyingResult(db.Model):
