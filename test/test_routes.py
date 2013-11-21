@@ -613,6 +613,10 @@ class RaceStandingListTests(BaseTest):
 class RaceEntryTests(BaseTest):
 
     def test_no_race_entry(self):
+        '''
+        should return no race entries
+        '''
+
         response = self.client.get('/api/s1/2013/raceentry/1')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(raceentry=[]))
