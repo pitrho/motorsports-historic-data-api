@@ -5,7 +5,8 @@ from flask.ext.restful import Api
 from flask.ext.script import Manager, Server, Shell
 from models import db
 from controllers import DriverList, TeamList, CrewChiefList, CarList, \
-    DriverStandingsList, TeamStandingsList, RaceList, RaceStandingList
+    DriverStandingsList, TeamStandingsList, RaceList, RaceStandingList, \
+    RaceEntryList
 
 
 def create_app(env_config):
@@ -60,6 +61,10 @@ def create_app(env_config):
     api.add_resource(RaceStandingList,
                      '/api/racestandings/<string:race_id>',
                      endpoint='racestandings')
+
+    api.add_resource(RaceEntryList,
+                     '/api/<string:series>/<string:season>/raceentry/<string:round>',
+                     endpoint='raceentry')
 
     return app
 

@@ -100,6 +100,7 @@ class Race(db.Model):
     __tablename__ = 'races'
 
     id = db.Column(db.String(50), primary_key=True)
+    round = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(100), nullable=False)
     season = db.Column(db.Integer, nullable=False)
     site = db.Column(db.String(50), nullable=False)
@@ -165,6 +166,12 @@ class RaceEntry(db.Model):
     car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
     crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
     entry_type_id = db.Column(db.Integer, db.ForeignKey('race_entry_types.id'), nullable=False)
+
+    race = db.relationship('Race')
+    driver = db.relationship('Driver')
+    team = db.relationship('Team')
+    car = db.relationship('Car')
+    crew_chief = db.relationship('CrewChief')
 
 
 class RaceResult(db.Model):

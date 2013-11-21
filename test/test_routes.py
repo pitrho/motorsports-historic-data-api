@@ -3,7 +3,7 @@ import datetime
 from flask.ext.testing import TestCase
 from app.manage import create_and_config_app, db
 from app.models import Series, Driver, Team, CrewChief, Car, DriverStanding,\
-    TeamStanding, Race, RaceResult, RaceStanding
+    TeamStanding, Race, RaceResult, RaceStanding, RaceEntry, RaceEntryType
 
 
 class BaseTest(TestCase):
@@ -50,7 +50,7 @@ class DriverListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', name='Race 1', season=2013, site='Site 1',
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
                      circuit_name='Circuit 1', city='City 1', state='ST',
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
@@ -87,7 +87,7 @@ class DriverListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', name='Race 1', season=2013, site='Site 1',
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
                      circuit_name='Circuit 1', city='City 1', state='ST',
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
@@ -151,7 +151,7 @@ class TeamListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', name='Race 1', season=2013, site='Site 1',
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
                      circuit_name='Circuit 1', city='City 1', state='ST',
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
@@ -188,7 +188,7 @@ class TeamListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', name='Race 1', season=2013, site='Site 1',
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
                      circuit_name='Circuit 1', city='City 1', state='ST',
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
@@ -253,7 +253,7 @@ class CrewChiefListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', name='Race 1', season=2013, site='Site 1',
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
                      circuit_name='Circuit 1', city='City 1', state='ST',
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
@@ -290,7 +290,7 @@ class CrewChiefListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', name='Race 1', season=2013, site='Site 1',
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
                      circuit_name='Circuit 1', city='City 1', state='ST',
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
@@ -355,7 +355,7 @@ class CarListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', name='Race 1', season=2013, site='Site 1',
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
                      circuit_name='Circuit 1', city='City 1', state='ST',
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
@@ -392,7 +392,7 @@ class CarListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', name='Race 1', season=2013, site='Site 1',
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
                      circuit_name='Circuit 1', city='City 1', state='ST',
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
@@ -535,15 +535,15 @@ class RaceListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', name='Race 1', season=2012, site='Site 1',
+        race1 = Race(id='race1', round=1, name='Race 1', season=2012, site='Site 1',
                      circuit_name='Circuit 1', city='City 1', state='ST',
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
-        race2 = Race(id='race2', name='Race 2', season=2013, site='Site 2',
+        race2 = Race(id='race2', round=2, name='Race 2', season=2013, site='Site 2',
                      circuit_name='Circuit 2', city='City 2', state='ST',
                      date=datetime.datetime.now(), laps=370, length=1.6, distance=550,
                      series=s1.id)
-        race3 = Race(id='race3', name='Race 3', season=2013, site='Site 3',
+        race3 = Race(id='race3', round=3, name='Race 3', season=2013, site='Site 3',
                      circuit_name='Circuit 3', city='City 3', state='ST',
                      date=datetime.datetime.now(), laps=400, length=1.7, distance=570,
                      series=s1.id)
@@ -567,7 +567,7 @@ class RaceListTests(BaseTest):
 
 class RaceStandingListTests(BaseTest):
 
-    def test_no_races(self):
+    def test_no_race_standings(self):
         '''should return no race standings'''
 
         response = self.client.get('/api/racestandings/r1')
@@ -583,11 +583,11 @@ class RaceStandingListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', name='Race 1', season=2013, site='Site 1',
+        race1 = Race(id='race1', round=2, name='Race 1', season=2013, site='Site 1',
                      circuit_name='Circuit 1', city='City 1', state='ST',
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
-        race2 = Race(id='race2', name='Race 2', season=2013, site='Site 2',
+        race2 = Race(id='race2', round=3, name='Race 2', season=2013, site='Site 2',
                      circuit_name='Circuit 2', city='City 2', state='ST',
                      date=datetime.datetime.now(), laps=370, length=1.6, distance=550,
                      series=s1.id)
@@ -606,6 +606,53 @@ class RaceStandingListTests(BaseTest):
                                       u'caution_flags': 5, u'caution_flag_laps': 30,
                                       u'lead_changes': 20, u'pole_speed': u'100.000',
                                       u'avg_speed': u'90.000', u'victory_margin': u'1.200'}]}
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, expect)
+
+
+class RaceEntryTests(BaseTest):
+
+    def test_no_race_entry(self):
+        response = self.client.get('/api/s1/2013/raceentry/1')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(raceentry=[]))
+
+    def test_race_entry_by_series_and_season(self):
+        '''should return all race entries for a given race in a series and season'''
+
+        self.maxDiff = None
+
+        s1 = Series(id='s1', description='series 1')
+        db.session.add(s1)
+        db.session.commit()
+
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
+                     circuit_name='Circuit 1', city='City 1', state='ST',
+                     date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
+                     series=s1.id)
+        db.session.add(race1)
+        db.session.commit()
+
+        ret1 = RaceEntryType(entry_type='type 1')
+        car1 = Car(number='1', car_type='Ford')
+        t1 = Team(id='t1', name='Team 1', alias='team1', owner='owner 1')
+        d1 = Driver(id='d1', first_name='driver', last_name='1', country='USA')
+        cc1 = CrewChief(id='cc1', name='Crew Chief 1')
+        db.session.add_all([car1, t1, d1, cc1, ret1])
+        db.session.commit()
+
+        re1 = RaceEntry(race_id=race1.id, driver_id=d1.id, team_id=t1.id,
+                        car_id=car1.id, crew_chief_id=cc1.id, entry_type_id=ret1.id)
+        db.session.add(re1)
+        db.session.commit()
+
+        response = self.client.get('/api/s1/2013/raceentry/1')
+        expect = {u'raceentry': [{u'race': {u'id': u'race1', u'name': race1.name},
+                                  u'driver': {u'id': d1.id,
+                                  u'first_name': d1.first_name, u'last_name': d1.last_name},
+                                  u'team': {u'id': t1.id, u'name': t1.name},
+                                  u'car': {u'number': car1.number, u'car_type': car1.car_type},
+                                  u'crew_chief': {u'id': cc1.id, u'name': cc1.name}}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 

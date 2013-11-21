@@ -1,6 +1,6 @@
 from flask.ext.restful import Resource, fields, marshal
 from models import Driver, Team, CrewChief, Car, DriverStanding, Race, \
-    TeamStanding, RaceStanding
+    TeamStanding, RaceStanding, RaceEntry
 
 
 class DriverList(Resource):
@@ -254,3 +254,58 @@ class RaceStandingList(Resource):
             return {'racestandings': marshal(racestandings.all(), self.race_standing_fields)}
 
         return {'racestandings': []}
+
+
+class RaceEntryList(Resource):
+
+    race_fields = {
+        'id': fields.String,
+        'name': fields.String
+    }
+
+    driver_fields = {
+        'id': fields.String,
+        'first_name': fields.String,
+        'last_name': fields.String
+    }
+
+    team_fields = {
+        'id': fields.String,
+        'name': fields.String
+    }
+
+    car_fields = {
+        'number': fields.Integer,
+        'car_type': fields.String
+    }
+
+    crew_chief_fields = {
+        'id': fields.String,
+        'name': fields.String
+    }
+
+    race_entry_fields = {
+        'race': fields.Nested(race_fields),
+        'driver': fields.Nested(driver_fields),
+        'team': fields.Nested(team_fields),
+        'car': fields.Nested(car_fields),
+        'crew_chief': fields.Nested(crew_chief_fields)
+    }
+
+    def get(self, series=None, season=None, round=None):
+        '''
+        Handles routes
+        /api/series/season/raceentry/race_id      Race entry list
+        '''
+
+        if series and season and round:
+            raceentry = RaceEntry.query.\
+                join(RaceEntry.race).\
+                filter(Race.series == series).\
+                filter(Race.season == season).\
+                filter(Race.round == round).\
+                filter(RaceEntry.entry_type_id == 1)
+
+            return {'raceentry': marshal(raceentry.all(), self.race_entry_fields)}
+
+        return {'raceentry': []}
