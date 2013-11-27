@@ -1,7 +1,7 @@
 from flask.ext.restful import Resource, fields, marshal
 from models import Driver, Team, CrewChief, Car, DriverStanding, Race, \
     TeamStanding, RaceStanding, RaceEntry, RaceEntryType, RaceResult, \
-    QualifyingResult
+    QualifyingResult, PracticeResult
 
 
 class DriverList(Resource):
@@ -414,7 +414,7 @@ class QualifyingResultList(Resource):
     def get(self, series=None, season=None, round=None):
         '''
         Handles routes
-        /api/series/season/qualifyingresults/round      Race results list
+        /api/series/season/qualifyingresults/round      Qualifying results list
         '''
 
         if series and season and round:
@@ -427,3 +427,61 @@ class QualifyingResultList(Resource):
             return {'qualifyingresults': marshal(qualifyingresults.all(), self.qualifying_result_fields)}
 
         return {'qualifyingresults': []}
+
+class PracticeResultList(Resource):
+
+    race_fields = {
+        'id': fields.String,
+        'name': fields.String
+    }
+
+    driver_fields = {
+        'id': fields.String,
+        'first_name': fields.String,
+        'last_name': fields.String
+    }
+
+    team_fields = {
+        'id': fields.String,
+        'name': fields.String
+    }
+
+    car_fields = {
+        'number': fields.Integer,
+        'car_type': fields.String
+    }
+
+    crew_chief_fields = {
+        'id': fields.String,
+        'name': fields.String
+    }
+
+    practice_result_fields = {
+        'race': fields.Nested(race_fields),
+        'driver': fields.Nested(driver_fields),
+        'team': fields.Nested(team_fields),
+        'car': fields.Nested(car_fields),
+        'crew_chief': fields.Nested(crew_chief_fields),
+        'session': fields.Integer,
+        'position': fields.Integer,
+        'lap_time': fields.Arbitrary
+    }
+
+    def get(self, series=None, season=None, round=None, session=None):
+        '''
+        Handles routes
+        /api/series/season/practiceresults/round              Practice results list
+        /api/series/season/practiceresults/round/session      Practice results list for a given session
+        '''
+
+        if series and season and round:
+            practiceresults = PracticeResult.query.\
+                join(PracticeResult.race).\
+                filter(Race.series == series).\
+                filter(Race.season == season).\
+                filter(Race.round == round)
+        
+        if session:
+            practiceresults  = practiceresults.filter(PracticeResult.session == session)
+
+        return {'practiceresults': marshal(practiceresults.all(), self.practice_result_fields)}
