@@ -212,7 +212,13 @@ class QualifyingResult(db.Model):
     car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
     crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
     position = db.Column(db.Integer, nullable=False)
-    lap_time = db.Column(db.Numeric(3, 3), nullable=False)
+    lap_time = db.Column(db.Numeric(10, 3), nullable=False)
+
+    race = db.relationship('Race')
+    driver = db.relationship('Driver')
+    team = db.relationship('Team')
+    car = db.relationship('Car')
+    crew_chief = db.relationship('CrewChief')
 
 
 class PracticeResult(db.Model):

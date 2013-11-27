@@ -3,7 +3,8 @@ import datetime
 from flask.ext.testing import TestCase
 from app.manage import create_and_config_app, db
 from app.models import Series, Driver, Team, CrewChief, Car, DriverStanding,\
-    TeamStanding, Race, RaceResult, RaceStanding, RaceEntry, RaceEntryType
+    TeamStanding, Race, RaceResult, RaceStanding, RaceEntry, RaceEntryType, \
+    QualifyingResult
 
 
 class BaseTest(TestCase):
@@ -716,6 +717,59 @@ class RaceResultListTests(BaseTest):
                                     u'sponsor': 'sponsor', u'position': 1, u'laps': 350,
                                     u'status': 'Finished', u'laps_led': 200, u'points': 0,
                                     u'money': u'0.00'}]}
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, expect)
+
+class QualifyingResultListTests(BaseTest):
+
+    def test_no_qualifying_results(self):
+        '''
+        should return no qualifying results
+        '''
+
+        response = self.client.get('/api/s1/2013/qualifyingresults/1')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(qualifyingresults=[]))
+
+    def test_qualifying_results_by_series_and_season(self):
+        '''should return all qualifying results for a given race in a series and season'''
+
+        s1 = Series(id='s1', description='series 1')
+        db.session.add(s1)
+        db.session.commit()
+
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
+                     circuit_name='Circuit 1', city='City 1', state='ST',
+                     date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
+                     series=s1.id)
+        db.session.add(race1)
+        db.session.commit()
+
+        d1 = Driver(id='d1', first_name='driver', last_name='1', country='USA')
+        t1 = Team(id='t1', name='Team 1', alias='team1', owner='Owner 1')
+        cc1 = CrewChief(id='cc1', name='Crew chief 1')
+        car1 = Car(number='1', car_type='Ford')
+        db.session.add_all([d1, t1, cc1, car1])
+        db.session.commit()
+
+        qr1 = QualifyingResult(race_id=race1.id, driver_id=d1.id, team_id=t1.id,
+                         car_id=car1.id, crew_chief_id=cc1.id,
+                         position=1, lap_time=35.25)
+        db.session.add(qr1)
+        db.session.commit()
+
+        response = self.client.get('/api/s1/2013/qualifyingresults/2')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(qualifyingresults=[]))
+
+        response = self.client.get('/api/s1/2013/qualifyingresults/1')
+        expect = {u'qualifyingresults': [{u'race': {u'id': u'race1', u'name': race1.name},
+                                          u'driver': {u'id': d1.id,
+                                          u'first_name': d1.first_name, u'last_name': d1.last_name},
+                                          u'team': {u'id': t1.id, u'name': t1.name},
+                                          u'car': {u'number': car1.number, u'car_type': car1.car_type},
+                                          u'crew_chief': {u'id': cc1.id, u'name': cc1.name},
+                                          u'position': 1, u'lap_time': u'35.250'}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
