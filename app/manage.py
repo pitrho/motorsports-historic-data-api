@@ -72,6 +72,7 @@ def create_app(env_config):
 
     api.add_resource(QualifyingResultList,
                      '/api/<string:series>/<string:season>/qualifyingresults/<string:round>',
+                     '/api/<string:series>/<string:season>/qualifyingresults/<string:round>/<string:session>',
                      endpoint='qualifyingresults')
 
     api.add_resource(PracticeResultList,

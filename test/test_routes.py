@@ -753,9 +753,12 @@ class QualifyingResultListTests(BaseTest):
         db.session.commit()
 
         qr1 = QualifyingResult(race_id=race1.id, driver_id=d1.id, team_id=t1.id,
-                         car_id=car1.id, crew_chief_id=cc1.id,
+                         car_id=car1.id, crew_chief_id=cc1.id, session=1,
                          position=1, lap_time=35.25)
-        db.session.add(qr1)
+        qr2 = QualifyingResult(race_id=race1.id, driver_id=d1.id, team_id=t1.id,
+                         car_id=car1.id, crew_chief_id=cc1.id, session=2,
+                         position=1, lap_time=34.25)
+        db.session.add_all([qr1, qr2])
         db.session.commit()
 
         response = self.client.get('/api/s1/2013/qualifyingresults/2')
@@ -769,9 +772,28 @@ class QualifyingResultListTests(BaseTest):
                                           u'team': {u'id': t1.id, u'name': t1.name},
                                           u'car': {u'number': car1.number, u'car_type': car1.car_type},
                                           u'crew_chief': {u'id': cc1.id, u'name': cc1.name},
-                                          u'position': 1, u'lap_time': u'35.250'}]}
+                                          u'session': 1, u'position': 1, u'lap_time': u'35.250'},
+                                         {u'race': {u'id': u'race1', u'name': race1.name},
+                                          u'driver': {u'id': d1.id,
+                                          u'first_name': d1.first_name, u'last_name': d1.last_name},
+                                          u'team': {u'id': t1.id, u'name': t1.name},
+                                          u'car': {u'number': car1.number, u'car_type': car1.car_type},
+                                          u'crew_chief': {u'id': cc1.id, u'name': cc1.name},
+                                          u'session': 2, u'position': 1, u'lap_time': u'34.250'}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
+
+        response = self.client.get('/api/s1/2013/qualifyingresults/1/2')
+        expect = {u'qualifyingresults': [{u'race': {u'id': u'race1', u'name': race1.name},
+                                          u'driver': {u'id': d1.id,
+                                          u'first_name': d1.first_name, u'last_name': d1.last_name},
+                                          u'team': {u'id': t1.id, u'name': t1.name},
+                                          u'car': {u'number': car1.number, u'car_type': car1.car_type},
+                                          u'crew_chief': {u'id': cc1.id, u'name': cc1.name},
+                                          u'session': 2, u'position': 1, u'lap_time': u'34.250'}]}
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, expect)
+
 
 class PracticeResultListTests(BaseTest):
 

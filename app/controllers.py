@@ -407,14 +407,16 @@ class QualifyingResultList(Resource):
         'team': fields.Nested(team_fields),
         'car': fields.Nested(car_fields),
         'crew_chief': fields.Nested(crew_chief_fields),
+        'session': fields.Integer,
         'position': fields.Integer,
         'lap_time': fields.Arbitrary
     }
 
-    def get(self, series=None, season=None, round=None):
+    def get(self, series=None, season=None, round=None, session=None):
         '''
         Handles routes
-        /api/series/season/qualifyingresults/round      Qualifying results list
+        /api/series/season/qualifyingresults/round          Qualifying results list
+        /api/series/season/qualifyingresults/round/session  Qualifying results list on a given session
         '''
 
         if series and season and round:
@@ -424,9 +426,11 @@ class QualifyingResultList(Resource):
                 filter(Race.season == season).\
                 filter(Race.round == round)
 
-            return {'qualifyingresults': marshal(qualifyingresults.all(), self.qualifying_result_fields)}
+        if session:
+            qualifyingresults = qualifyingresults.filter(QualifyingResult.session == session)
 
-        return {'qualifyingresults': []}
+        return {'qualifyingresults': marshal(qualifyingresults.all(), self.qualifying_result_fields)}
+
 
 class PracticeResultList(Resource):
 

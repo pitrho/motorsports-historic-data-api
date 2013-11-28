@@ -211,6 +211,7 @@ class QualifyingResult(db.Model):
     team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
     car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
     crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
+    session = db.Column(db.Integer, nullable=False)
     position = db.Column(db.Integer, nullable=False)
     lap_time = db.Column(db.Numeric(6, 3), nullable=False)
 
