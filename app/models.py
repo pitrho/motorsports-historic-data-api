@@ -3,6 +3,19 @@ from flask.ext.sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
+PersonType = db.Enum('driver', 'team-owner', 'crew-chief', 'car-owner', 'team-principal',
+                     'technical-chief', 'race-engineer', name='person_types')
+
+
+class Person(db.Model):
+
+    __tablename__ = 'people'
+
+    id = db.Column(db.String(50), primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    country = db.Column(db.String(50), nullable=False)
+
+
 class Series(db.Model):
 
     __tablename__ = 'series'
@@ -20,7 +33,7 @@ class Driver(db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     country = db.Column(db.String(50), nullable=False)
 
-    races = db.relationship('Race', secondary='race_results')
+    #races = db.relationship('Race', secondary='race_results')
 
 
 class Team(db.Model):
@@ -30,15 +43,11 @@ class Team(db.Model):
     id = db.Column(db.String(50), primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     alias = db.Column(db.String(50), nullable=False)
-    owner = db.Column(db.String(100), nullable=False)
+    owner_id = db.Column(db.String(50), db.ForeignKey('people.id'), nullable=False)
+    #owner = db.Column(db.String(100), nullable=False)
 
     races = db.relationship('Race', secondary='race_results')
-
-    #crew_chief_id = Column(String(50), ForeignKey('crew_chiefs.id'),
-    #                       nullable=False)
-
-    #drivers = db.relationship('Driver', secondary='drivers_teams_cars')
-    #cars = db.relationship('Car', secondary='drivers_teams_cars')
+    owner = db.relationship('Person', primaryjoin=owner_id == Person.id)
 
 
 class CrewChief(db.Model):
@@ -48,7 +57,7 @@ class CrewChief(db.Model):
     id = db.Column(db.String(50), primary_key=True)
     name = db.Column(db.String(100), nullable=False)
 
-    races = db.relationship('Race', secondary='race_results')
+    #races = db.relationship('Race', secondary='race_results')
 
 
 class Car(db.Model):
@@ -58,8 +67,10 @@ class Car(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     number = db.Column(db.Integer, nullable=False)
     car_type = db.Column(db.String(50), nullable=False)
+    owner_id = db.Column(db.String(50), db.ForeignKey('people.id'), nullable=True)
 
     races = db.relationship('Race', secondary='race_results')
+    owner = db.relationship('Person', primaryjoin=owner_id == Person.id)
 
 
 class DriverStanding(db.Model):
@@ -67,7 +78,7 @@ class DriverStanding(db.Model):
     __tablename__ = 'driver_standings'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
+    driver_id = db.Column(db.String(50), db.ForeignKey('people.id'), nullable=False)
     car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
     series = db.Column(db.String(5), db.ForeignKey('series.id'), nullable=False)
     season = db.Column(db.Integer, nullable=False)
@@ -79,6 +90,9 @@ class DriverStanding(db.Model):
     dnfs = db.Column(db.Integer, nullable=False)
     top5 = db.Column(db.Integer, nullable=False)
     top10 = db.Column(db.Integer, nullable=False)
+
+    driver = db.relationship('Person')
+    car = db.relationship('Car')
 
 
 class TeamStanding(db.Model):
@@ -181,10 +195,8 @@ class RaceResult(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     race_id = db.Column(db.String(50), db.ForeignKey('races.id'), nullable=False)
-    driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
     team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
     car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
-    crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
     sponsor = db.Column(db.String(100), nullable=False)
     grid = db.Column(db.Integer, nullable=False)
     position = db.Column(db.Integer, nullable=False)
@@ -195,10 +207,24 @@ class RaceResult(db.Model):
     money = db.Column(db.Numeric(10, 2), nullable=False)
 
     race = db.relationship('Race')
-    driver = db.relationship('Driver')
+    #driver = db.relationship('Driver')
     team = db.relationship('Team')
     car = db.relationship('Car')
-    crew_chief = db.relationship('CrewChief')
+    #crew_chief = db.relationship('CrewChief')
+    #people = db.relationship('RaceResultPerson', secondary='race_results_people', lazy='joined')
+
+
+class RaceResultPerson(db.Model):
+
+    __tablename__ = 'race_results_people'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    race_result_id = db.Column(db.Integer, db.ForeignKey('race_results.id'), nullable=False)
+    person_id = db.Column(db.String(50), db.ForeignKey('people.id'), nullable=False) 
+    type = db.Column(PersonType, nullable=False)
+
+    person = db.relationship('Person')
+    race_result = db.relationship('RaceResult')
 
 
 class QualifyingResult(db.Model):
@@ -207,19 +233,32 @@ class QualifyingResult(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     race_id = db.Column(db.String(50), db.ForeignKey('races.id'), nullable=False)
-    driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
+    #driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
     team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
     car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
-    crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
+    #crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
     session = db.Column(db.Integer, nullable=False)
     position = db.Column(db.Integer, nullable=False)
     lap_time = db.Column(db.Numeric(6, 3), nullable=False)
 
     race = db.relationship('Race')
-    driver = db.relationship('Driver')
+    #driver = db.relationship('Driver')
     team = db.relationship('Team')
     car = db.relationship('Car')
-    crew_chief = db.relationship('CrewChief')
+    #crew_chief = db.relationship('CrewChief')
+
+
+class QualifyingResultPerson(db.Model):
+
+    __tablename__ = 'qualifying_results_people'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    qualifying_result_id = db.Column(db.Integer, db.ForeignKey('qualifying_results.id'), nullable=False)
+    person_id = db.Column(db.String(50), db.ForeignKey('people.id'), nullable=False) 
+    type = db.Column(PersonType, nullable=False)
+
+    person = db.relationship('Person')
+    race_result = db.relationship('QualifyingResult')
 
 
 class PracticeResult(db.Model):

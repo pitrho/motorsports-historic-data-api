@@ -1,16 +1,45 @@
+from flask import request
 from flask.ext.restful import Resource, fields, marshal
 from models import Driver, Team, CrewChief, Car, DriverStanding, Race, \
     TeamStanding, RaceStanding, RaceEntry, RaceEntryType, RaceResult, \
-    QualifyingResult, PracticeResult
+    QualifyingResult, PracticeResult, RaceResultPerson, PersonType
+
+
+class PeopleList(Resource):
+
+    person_fields = {
+        'id': fields.String(attribute='person.id'),
+        'name': fields.String(attribute='person.name'),
+        'country': fields.String(attribute='person.country')
+    }
+
+    def get(self, series=None, season=None):
+        path = request.path.split("/")
+        person_type = (path[-1])[:-1]
+
+        if person_type in PersonType.enums:
+            people = RaceResultPerson.query.\
+                filter(RaceResultPerson.type == person_type)
+
+            if series:
+                people = people.join(RaceResultPerson.race_result).\
+                    join(RaceResult.race).\
+                    filter(Race.series == series)
+
+            if season:
+                people = people.filter(Race.season == season)
+
+            return {path[-1]: marshal(people.all(), self.person_fields)}
+
+        return {path[-1]: []}
 
 
 class DriverList(Resource):
 
-    drivers_fields = {
-        'id': fields.String,
-        'first_name': fields.String,
-        'last_name': fields.String,
-        'country': fields.String
+    driver_fields = {
+        'id': fields.String(attribute='person.id'),
+        'name': fields.String(attribute='person.name'),
+        'country': fields.String(attribute='person.country')
     }
 
     def get(self, series=None, season=None):
@@ -21,30 +50,33 @@ class DriverList(Resource):
         /api/series/season/drivers  Drivers from a series and season
         '''
 
-        # /api/drivers
-        #if series is None and season is None:
-            #drivers = Driver.query.all()
-        drivers = Driver.query
+        drivers = RaceResultPerson.query.\
+            filter(RaceResultPerson.type == 'driver')
 
-        # /api/series/drivers
         if series:
-            drivers = drivers.join(Driver.races).\
+            drivers = drivers.join(RaceResultPerson.race_result).\
+                join(RaceResult.race).\
                 filter(Race.series == series)
 
-        # /api/series/season/drivers
         if season:
             drivers = drivers.filter(Race.season == season)
 
-        return {'drivers': marshal(drivers.all(), self.drivers_fields)}
+        return {'drivers': marshal(drivers.all(), self.driver_fields)}
 
 
 class TeamList(Resource):
+
+    owner_fields = {
+        'id': fields.String,
+        'name': fields.String,
+        'country': fields.String
+    }
 
     teams_fields = {
         'id': fields.String,
         'name': fields.String,
         'alias': fields.String,
-        'owner': fields.String
+        'owner': fields.Nested(owner_fields)
     }
 
     def get(self, series=None, season=None):
@@ -70,7 +102,7 @@ class TeamList(Resource):
         return {'teams': marshal(teams.all(), self.teams_fields)}
 
 
-class CrewChiefList(Resource):
+"""class CrewChiefList(Resource):
 
     crewchief_fields = {
         'id': fields.String,
@@ -97,15 +129,22 @@ class CrewChiefList(Resource):
         if season:
             crewchiefs = crewchiefs.filter(Race.season == season)
 
-        return {'crewchiefs': marshal(crewchiefs.all(), self.crewchief_fields)}
+        return {'crewchiefs': marshal(crewchiefs.all(), self.crewchief_fields)}"""
 
 
 class CarList(Resource):
 
+    owner_fields = {
+        'id': fields.String,
+        'name': fields.String,
+        'country': fields.String
+    }
+
     car_fields = {
         'id': fields.String,
         'number': fields.String,
-        'car_type': fields.String
+        'car_type': fields.String,
+        'owner': fields.Nested(owner_fields)
     }
 
     def get(self, series=None, season=None):
@@ -133,10 +172,29 @@ class CarList(Resource):
 
 class DriverStandingsList(Resource):
 
+    driver_fields = {
+        'id': fields.String,
+        'name': fields.String,
+        'country': fields.String
+    }
+
+    owner_fields = {
+        'id': fields.String,
+        'name': fields.String,
+        'country': fields.String
+    }
+
+    car_fields = {
+        'id': fields.String,
+        'number': fields.String,
+        'car_type': fields.String,
+        'owner': fields.Nested(owner_fields)
+    }
+
     driver_standings_fields = {
         'id': fields.Integer,
-        'driver_id': fields.String,
-        'car_id': fields.Integer,
+        'driver': fields.Nested(driver_fields),
+        'car': fields.Nested(car_fields),
         'series': fields.String,
         'season': fields.Integer,
         'position': fields.Integer,
@@ -152,7 +210,7 @@ class DriverStandingsList(Resource):
     def get(self, series=None, season=None):
         '''
         Handles routes
-        /api/series/season/driverstandings  Driver standings from a series and season
+        /api/series/season/driverstandings Driver standings from a series and season
         '''
 
         # /api/series/season/driverstandings
@@ -373,6 +431,7 @@ class RaceResultList(Resource):
 
         return {'raceresults': []}
 
+
 class QualifyingResultList(Resource):
 
     race_fields = {
@@ -484,8 +543,8 @@ class PracticeResultList(Resource):
                 filter(Race.series == series).\
                 filter(Race.season == season).\
                 filter(Race.round == round)
-        
+
         if session:
-            practiceresults  = practiceresults.filter(PracticeResult.session == session)
+            practiceresults = practiceresults.filter(PracticeResult.session == session)
 
         return {'practiceresults': marshal(practiceresults.all(), self.practice_result_fields)}

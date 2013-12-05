@@ -4,9 +4,10 @@ from flask.ext.migrate import Migrate, MigrateCommand
 from flask.ext.restful import Api
 from flask.ext.script import Manager, Server, Shell
 from models import db
-from controllers import DriverList, TeamList, CrewChiefList, CarList, \
+from controllers import DriverList, TeamList, CarList, \
     DriverStandingsList, TeamStandingsList, RaceList, RaceStandingList, \
-    RaceEntryList, RaceResultList, QualifyingResultList, PracticeResultList
+    RaceEntryList, RaceResultList, QualifyingResultList, PracticeResultList, \
+    PeopleList
 
 
 def create_app(env_config):
@@ -34,11 +35,11 @@ def create_app(env_config):
                      '/api/<string:series>/<string:season>/teams',
                      endpoint='teams')
 
-    api.add_resource(CrewChiefList,
+    """api.add_resource(CrewChiefList,
                      '/api/crewchiefs',
                      '/api/<string:series>/crewchiefs',
                      '/api/<string:series>/<string:season>/crewchiefs',
-                     endpoint='crewchiefs')
+                     endpoint='crewchiefs')"""
 
     api.add_resource(CarList,
                      '/api/cars',
