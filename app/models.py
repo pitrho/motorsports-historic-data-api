@@ -108,6 +108,9 @@ class TeamStanding(db.Model):
     points = db.Column(db.Integer, nullable=False)
     poles = db.Column(db.Integer, nullable=False)
 
+    team = db.relationship('Team')
+    car = db.relationship('Car')
+
 
 class Race(db.Model):
 

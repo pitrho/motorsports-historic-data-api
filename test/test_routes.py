@@ -503,13 +503,18 @@ class TeamStandingsListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        t1 = Team(id='t1', name='Team 1', alias='team1', owner='owner 1')
-        t2 = Team(id='t2', name='Team 2', alias='team2', owner='owner 2')
+        p1 = Person(id='p1', name='owner 1', country='USA')
+        p2 = Person(id='p2', name='owner 2', country='USA')
+        db.session.add_all([p1, p2])
+        db.session.commit()
+
+        t1 = Team(id='t1', name='Team 1', alias='team1', owner_id=p1.id)
+        t2 = Team(id='t2', name='Team 2', alias='team2', owner_id=p2.id)
         db.session.add_all([t1, t2])
         db.session.commit()
 
-        car1 = Car(number='1', car_type='Ford')
-        car2 = Car(number='2', car_type='Chevy')
+        car1 = Car(number='1', car_type='Ford', owner_id=p1.id)
+        car2 = Car(number='2', car_type='Chevy', owner_id=p2.id)
         db.session.add_all([car1, car2])
         db.session.commit()
 
@@ -521,10 +526,18 @@ class TeamStandingsListTests(BaseTest):
         db.session.commit()
 
         response = self.client.get('/api/s1/2013/teamstandings')
-        expect = {u'teamstandings': [{u'id': 1, u'team_id': u't1', u'car_id': 1,
+        expect = {u'teamstandings': [{u'id': 1,
+                                      u'team': {u'id': u't1', u'name': u'Team 1', u'alias': u'team1',
+                                      u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'}},
+                                      u'car': {u'id': u'1', u'number': '1', u'car_type': u'Ford',
+                                      u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'}},
                                       u'series': u's1', u'season': 2013, u'position': 1,
                                       u'points': 500, u'poles': 5},
-                                     {u'id': 2, u'team_id': u't2', u'car_id': 2,
+                                     {u'id': 2,
+                                      u'team': {u'id': u't2', u'name': u'Team 2', u'alias': u'team2',
+                                      u'owner': {u'id': 'p2', u'name': 'owner 2', u'country': 'USA'}},
+                                      u'car': {u'id': u'2', u'number': '2', u'car_type': u'Chevy',
+                                      u'owner': {u'id': 'p2', u'name': 'owner 2', u'country': 'USA'}},
                                       u'series': u's1', u'season': 2013, u'position': 2,
                                       u'points': 450, u'poles': 3}]}
         self.assertEqual(response._status_code, 200)

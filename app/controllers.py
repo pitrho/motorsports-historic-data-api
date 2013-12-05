@@ -225,10 +225,30 @@ class DriverStandingsList(Resource):
 
 class TeamStandingsList(Resource):
 
+    owner_fields = {
+        'id': fields.String,
+        'name': fields.String,
+        'country': fields.String
+    }
+
+    teams_fields = {
+        'id': fields.String,
+        'name': fields.String,
+        'alias': fields.String,
+        'owner': fields.Nested(owner_fields)
+    }
+
+    car_fields = {
+        'id': fields.String,
+        'number': fields.String,
+        'car_type': fields.String,
+        'owner': fields.Nested(owner_fields)
+    }
+
     team_standings_fields = {
         'id': fields.Integer,
-        'team_id': fields.String,
-        'car_id': fields.Integer,
+        'team': fields.Nested(teams_fields),
+        'car': fields.Nested(car_fields),
         'series': fields.String,
         'season': fields.Integer,
         'position': fields.Integer,
