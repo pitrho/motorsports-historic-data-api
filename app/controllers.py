@@ -342,33 +342,28 @@ class RaceEntryList(Resource):
         'name': fields.String
     }
 
-    driver_fields = {
+    person_fields = {
         'id': fields.String,
-        'first_name': fields.String,
-        'last_name': fields.String
+        'name': fields.String,
+        'country': fields.String
     }
 
     team_fields = {
         'id': fields.String,
-        'name': fields.String
+        'name': fields.String,
+        'owner': fields.Nested(person_fields)
     }
 
     car_fields = {
         'number': fields.Integer,
-        'car_type': fields.String
-    }
-
-    crew_chief_fields = {
-        'id': fields.String,
-        'name': fields.String
+        'car_type': fields.String,
+        'owner': fields.Nested(person_fields)
     }
 
     race_entry_fields = {
         'race': fields.Nested(race_fields),
-        'driver': fields.Nested(driver_fields),
         'team': fields.Nested(team_fields),
-        'car': fields.Nested(car_fields),
-        'crew_chief': fields.Nested(crew_chief_fields)
+        'car': fields.Nested(car_fields)
     }
 
     def get(self, series=None, season=None, entry_type=None, round=None):
@@ -376,6 +371,8 @@ class RaceEntryList(Resource):
         Handles routes
         /api/series/season/raceentry/entry_type/race_id      Race entry list
         '''
+
+        results = []
 
         if series and season and entry_type and round:
             raceentry = RaceEntry.query.\
@@ -386,9 +383,18 @@ class RaceEntryList(Resource):
                 filter(Race.round == round).\
                 filter(RaceEntryType.entry_type == entry_type)
 
-            return {'raceentry': marshal(raceentry.all(), self.race_entry_fields)}
+            raceentry = raceentry.all()
 
-        return {'raceentry': []}
+            for result in raceentry:
+                rslt = marshal(result, self.race_entry_fields)
+
+                for p in result.people:
+                    prsn = marshal(p.person, self.person_fields)
+                    rslt[p.type] = prsn
+
+                results.append(rslt)
+
+        return {'raceentry': results}
 
 
 class RaceResultList(Resource):

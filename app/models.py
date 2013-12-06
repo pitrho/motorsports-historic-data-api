@@ -178,18 +178,28 @@ class RaceEntry(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     race_id = db.Column(db.String(50), db.ForeignKey('races.id'), nullable=False)
-    driver_id = db.Column(db.String(50), db.ForeignKey('drivers.id'), nullable=False)
     team_id = db.Column(db.String(50), db.ForeignKey('teams.id'), nullable=False)
     car_id = db.Column(db.Integer, db.ForeignKey('cars.id'), nullable=False)
-    crew_chief_id = db.Column(db.String(50), db.ForeignKey('crew_chiefs.id'), nullable=False)
     entry_type_id = db.Column(db.Integer, db.ForeignKey('race_entry_types.id'), nullable=False)
 
     race = db.relationship('Race')
-    driver = db.relationship('Driver')
     team = db.relationship('Team')
     car = db.relationship('Car')
-    crew_chief = db.relationship('CrewChief')
     entry_type = db.relationship('RaceEntryType')
+    people = db.relationship('RaceEntryPerson')
+
+
+class RaceEntryPerson(db.Model):
+
+    __tablename__ = 'race_entries_people'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    race_entry_id = db.Column(db.Integer, db.ForeignKey('race_entries.id'), nullable=False)
+    person_id = db.Column(db.String(50), db.ForeignKey('people.id'), nullable=False)
+    type = db.Column(PersonType, nullable=False)
+
+    person = db.relationship('Person')
+    race_entry = db.relationship('RaceEntry')
 
 
 class RaceResult(db.Model):
@@ -210,11 +220,8 @@ class RaceResult(db.Model):
     money = db.Column(db.Numeric(10, 2), nullable=False)
 
     race = db.relationship('Race')
-    #driver = db.relationship('Driver')
     team = db.relationship('Team')
     car = db.relationship('Car')
-    #crew_chief = db.relationship('CrewChief')
-    #people = db.relationship('RaceResultPerson', secondary='race_results_people', lazy='joined')
     people = db.relationship('RaceResultPerson')
 
 

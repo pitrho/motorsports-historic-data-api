@@ -5,7 +5,7 @@ from app.manage import create_and_config_app, db
 from app.models import Series, Driver, Team, CrewChief, Car, DriverStanding,\
     TeamStanding, Race, RaceResult, RaceStanding, RaceEntry, RaceEntryType, \
     QualifyingResult, PracticeResult, Person, RaceResultPerson,\
-    QualifyingResultPerson, PracticeResultPerson
+    QualifyingResultPerson, PracticeResultPerson, RaceEntryPerson
 
 
 class BaseTest(TestCase):
@@ -54,11 +54,12 @@ class DriverListTests(BaseTest):
         p2 = Person(id='p2', name='driver 2', country='USA')
         p3 = Person(id='p3', name='crew cheif 1', country='USA')
         p4 = Person(id='p4', name='crew cheif 2', country='USA')
-        db.session.add_all([p1, p2, p3, p4])
+        p5 = Person(id='p5', name='owner 1', country='USA')
+        db.session.add_all([p1, p2, p3, p4, p5])
         db.session.commit()
 
-        t1 = Team(id='t1', name='Team 1', alias='team1', owner='Owner 1')
-        car1 = Car(number='1', car_type='Ford')
+        t1 = Team(id='t1', name='Team 1', alias='team1', owner_id=p5.id)
+        car1 = Car(number='1', car_type='Ford', owner_id=p1.id)
         db.session.add_all([t1, car1])
         db.session.commit()
 
@@ -72,9 +73,9 @@ class DriverListTests(BaseTest):
         db.session.commit()
 
         rrp1 = RaceResultPerson(race_result_id=rr1.id, person_id=p1.id, type='driver')
-        rrp2 = RaceResultPerson(race_result_id=rr1.id, person_id=p3.id, type='crew_chief')
+        rrp2 = RaceResultPerson(race_result_id=rr1.id, person_id=p3.id, type='crew-chief')
         rrp3 = RaceResultPerson(race_result_id=rr2.id, person_id=p2.id, type='driver')
-        rrp4 = RaceResultPerson(race_result_id=rr2.id, person_id=p4.id, type='crew_chief')
+        rrp4 = RaceResultPerson(race_result_id=rr2.id, person_id=p4.id, type='crew-chief')
         db.session.add_all([rrp1, rrp2, rrp3, rrp4])
         db.session.commit()
 
@@ -661,17 +662,26 @@ class RaceEntryListTests(BaseTest):
         db.session.add(race1)
         db.session.commit()
 
-        ret1 = RaceEntryType(entry_type='type1')
-        car1 = Car(number='1', car_type='Ford')
-        t1 = Team(id='t1', name='Team 1', alias='team1', owner='owner 1')
-        d1 = Driver(id='d1', first_name='driver', last_name='1', country='USA')
-        cc1 = CrewChief(id='cc1', name='Crew Chief 1')
-        db.session.add_all([car1, t1, d1, cc1, ret1])
+        p1 = Person(id='p1', name='driver', country='USA')
+        p2 = Person(id='p2', name='owner', country='USA')
+        p3 = Person(id='p3', name='crew chief', country='USA')
+        db.session.add_all([p1, p2, p3])
         db.session.commit()
 
-        re1 = RaceEntry(race_id=race1.id, driver_id=d1.id, team_id=t1.id,
-                        car_id=car1.id, crew_chief_id=cc1.id, entry_type_id=ret1.id)
+        ret1 = RaceEntryType(entry_type='type1')
+        t1 = Team(id='t1', name='Team 1', alias='team1', owner_id=p2.id)
+        car1 = Car(number='1', car_type='Ford', owner_id=p1.id)
+        db.session.add_all([ret1, t1, car1])
+        db.session.commit()
+
+        re1 = RaceEntry(race_id=race1.id, team_id=t1.id,
+                        car_id=car1.id, entry_type_id=ret1.id)
         db.session.add(re1)
+        db.session.commit()
+
+        rep1 = RaceEntryPerson(race_entry_id=re1.id, person_id=p1.id, type='driver')
+        rep2 = RaceEntryPerson(race_entry_id=re1.id, person_id=p3.id, type='crew-chief')
+        db.session.add_all([rep1, rep2])
         db.session.commit()
 
         response = self.client.get('/api/s1/2013/raceentry/type2/1')
@@ -680,11 +690,12 @@ class RaceEntryListTests(BaseTest):
 
         response = self.client.get('/api/s1/2013/raceentry/type1/1')
         expect = {u'raceentry': [{u'race': {u'id': u'race1', u'name': race1.name},
-                                  u'driver': {u'id': d1.id,
-                                  u'first_name': d1.first_name, u'last_name': d1.last_name},
-                                  u'team': {u'id': t1.id, u'name': t1.name},
-                                  u'car': {u'number': car1.number, u'car_type': car1.car_type},
-                                  u'crew_chief': {u'id': cc1.id, u'name': cc1.name}}]}
+                                  u'team': {u'id': t1.id, u'name': t1.name,
+                                            u'owner': {u'id': 'p2', u'name': 'owner', u'country': 'USA'}},
+                                  u'car': {u'number': car1.number, u'car_type': car1.car_type,
+                                           u'owner': {u'id': 'p1', u'name': 'driver', u'country': 'USA'}},
+                                  u'crew-chief': {u'id': 'p3', u'name': 'crew chief', u'country': 'USA'},
+                                  u'driver': {u'id': 'p1', u'name': 'driver', u'country': 'USA'}}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
