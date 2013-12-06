@@ -485,10 +485,8 @@ class QualifyingResultList(Resource):
 
     qualifying_result_fields = {
         'race': fields.Nested(race_fields),
-        #'driver': fields.Nested(driver_fields),
         'team': fields.Nested(team_fields),
         'car': fields.Nested(car_fields),
-        #'crew_chief': fields.Nested(crew_chief_fields),
         'session': fields.Integer,
         'position': fields.Integer,
         'lap_time': fields.Arbitrary
@@ -534,33 +532,28 @@ class PracticeResultList(Resource):
         'name': fields.String
     }
 
-    driver_fields = {
+    person_fields = {
         'id': fields.String,
-        'first_name': fields.String,
-        'last_name': fields.String
+        'name': fields.String,
+        'country': fields.String
     }
 
     team_fields = {
         'id': fields.String,
-        'name': fields.String
+        'name': fields.String,
+        'owner': fields.Nested(person_fields)
     }
 
     car_fields = {
         'number': fields.Integer,
-        'car_type': fields.String
-    }
-
-    crew_chief_fields = {
-        'id': fields.String,
-        'name': fields.String
+        'car_type': fields.String,
+        'owner': fields.Nested(person_fields)
     }
 
     practice_result_fields = {
         'race': fields.Nested(race_fields),
-        'driver': fields.Nested(driver_fields),
         'team': fields.Nested(team_fields),
         'car': fields.Nested(car_fields),
-        'crew_chief': fields.Nested(crew_chief_fields),
         'session': fields.Integer,
         'position': fields.Integer,
         'lap_time': fields.Arbitrary
@@ -573,6 +566,8 @@ class PracticeResultList(Resource):
         /api/series/season/practiceresults/round/session      Practice results list for a given session
         '''
 
+        results = []
+
         if series and season and round:
             practiceresults = PracticeResult.query.\
                 join(PracticeResult.race).\
@@ -583,4 +578,15 @@ class PracticeResultList(Resource):
         if session:
             practiceresults = practiceresults.filter(PracticeResult.session == session)
 
-        return {'practiceresults': marshal(practiceresults.all(), self.practice_result_fields)}
+        practiceresults = practiceresults.all()
+
+        for result in practiceresults:
+            rslt = marshal(result, self.practice_result_fields)
+
+            for p in result.people:
+                prsn = marshal(p.person, self.person_fields)
+                rslt[p.type] = prsn
+
+            results.append(rslt)
+
+        return {'practiceresults': results}
