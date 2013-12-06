@@ -24,18 +24,6 @@ class Series(db.Model):
     description = db.Column(db.String(50), nullable=True)
 
 
-class Driver(db.Model):
-
-    __tablename__ = 'drivers'
-
-    id = db.Column(db.String(50), primary_key=True)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
-    country = db.Column(db.String(50), nullable=False)
-
-    #races = db.relationship('Race', secondary='race_results')
-
-
 class Team(db.Model):
 
     __tablename__ = 'teams'
@@ -48,16 +36,6 @@ class Team(db.Model):
 
     races = db.relationship('Race', secondary='race_results')
     owner = db.relationship('Person', primaryjoin=owner_id == Person.id)
-
-
-class CrewChief(db.Model):
-
-    __tablename__ = 'crew_chiefs'
-
-    id = db.Column(db.String(50), primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-
-    #races = db.relationship('Race', secondary='race_results')
 
 
 class Car(db.Model):

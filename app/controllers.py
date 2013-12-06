@@ -1,6 +1,6 @@
 from flask import request
 from flask.ext.restful import Resource, fields, marshal
-from models import Driver, Team, CrewChief, Car, DriverStanding, Race, \
+from models import Team, Car, DriverStanding, Race, \
     TeamStanding, RaceStanding, RaceEntry, RaceEntryType, RaceResult, \
     QualifyingResult, PracticeResult, RaceResultPerson, PersonType
 
@@ -100,36 +100,6 @@ class TeamList(Resource):
             teams = teams.filter(Race.season == season)
 
         return {'teams': marshal(teams.all(), self.teams_fields)}
-
-
-"""class CrewChiefList(Resource):
-
-    crewchief_fields = {
-        'id': fields.String,
-        'name': fields.String
-    }
-
-    def get(self, series=None, season=None):
-        '''
-        Handles routes
-        /api/crewchiefs                 All crew cheifs
-        /api/series/crewcheifs          Crew cheifs from a series
-        /api/series/season/crewchiefs   Crew cheifs from a series and season
-        '''
-
-        # /api/crewchiefs
-        crewchiefs = CrewChief.query
-
-        # /api/series/crewchiefs
-        if series:
-            crewchiefs = crewchiefs.join(CrewChief.races).\
-                filter(Race.series == series)
-
-        # /api/series/season/crewchiefs
-        if season:
-            crewchiefs = crewchiefs.filter(Race.season == season)
-
-        return {'crewchiefs': marshal(crewchiefs.all(), self.crewchief_fields)}"""
 
 
 class CarList(Resource):

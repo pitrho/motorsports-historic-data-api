@@ -35,12 +35,6 @@ def create_app(env_config):
                      '/api/<string:series>/<string:season>/teams',
                      endpoint='teams')
 
-    """api.add_resource(CrewChiefList,
-                     '/api/crewchiefs',
-                     '/api/<string:series>/crewchiefs',
-                     '/api/<string:series>/<string:season>/crewchiefs',
-                     endpoint='crewchiefs')"""
-
     api.add_resource(CarList,
                      '/api/cars',
                      '/api/<string:series>/cars',
