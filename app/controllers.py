@@ -398,33 +398,28 @@ class RaceResultList(Resource):
         'name': fields.String
     }
 
-    driver_fields = {
+    person_fields = {
         'id': fields.String,
-        'first_name': fields.String,
-        'last_name': fields.String
+        'name': fields.String,
+        'country': fields.String
     }
 
     team_fields = {
         'id': fields.String,
-        'name': fields.String
+        'name': fields.String,
+        'owner': fields.Nested(person_fields)
     }
 
     car_fields = {
         'number': fields.Integer,
-        'car_type': fields.String
-    }
-
-    crew_chief_fields = {
-        'id': fields.String,
-        'name': fields.String
+        'car_type': fields.String,
+        'owner': fields.Nested(person_fields)
     }
 
     race_result_fields = {
         'race': fields.Nested(race_fields),
-        'driver': fields.Nested(driver_fields),
         'team': fields.Nested(team_fields),
         'car': fields.Nested(car_fields),
-        'crew_chief': fields.Nested(crew_chief_fields),
         'sponsor': fields.String,
         'position': fields.Integer,
         'laps': fields.Integer,
@@ -440,6 +435,8 @@ class RaceResultList(Resource):
         /api/series/season/raceresults/round      Race results list
         '''
 
+        results = []
+
         if series and season and round:
             raceresults = RaceResult.query.\
                 join(RaceResult.race).\
@@ -447,9 +444,18 @@ class RaceResultList(Resource):
                 filter(Race.season == season).\
                 filter(Race.round == round)
 
-            return {'raceresults': marshal(raceresults.all(), self.race_result_fields)}
+            raceresults = raceresults.all()
 
-        return {'raceresults': []}
+            for result in raceresults:
+                rslt = marshal(result, self.race_result_fields)
+
+                for p in result.people:
+                    prsn = marshal(p.person, self.person_fields)
+                    rslt[p.type] = prsn
+
+                results.append(rslt)
+
+        return {'raceresults': results}
 
 
 class QualifyingResultList(Resource):

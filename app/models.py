@@ -215,6 +215,7 @@ class RaceResult(db.Model):
     car = db.relationship('Car')
     #crew_chief = db.relationship('CrewChief')
     #people = db.relationship('RaceResultPerson', secondary='race_results_people', lazy='joined')
+    people = db.relationship('RaceResultPerson')
 
 
 class RaceResultPerson(db.Model):
