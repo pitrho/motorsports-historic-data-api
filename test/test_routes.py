@@ -4,7 +4,7 @@ from flask.ext.testing import TestCase
 from app.manage import create_and_config_app, db
 from app.models import Series, Driver, Team, CrewChief, Car, DriverStanding,\
     TeamStanding, Race, RaceResult, RaceStanding, RaceEntry, RaceEntryType, \
-    QualifyingResult, PracticeResult, Person, RaceResultPerson
+    QualifyingResult, PracticeResult, Person, RaceResultPerson, QualifyingResultPerson
 
 
 class BaseTest(TestCase):
@@ -781,20 +781,31 @@ class QualifyingResultListTests(BaseTest):
         db.session.add(race1)
         db.session.commit()
 
-        d1 = Driver(id='d1', first_name='driver', last_name='1', country='USA')
-        t1 = Team(id='t1', name='Team 1', alias='team1', owner='Owner 1')
-        cc1 = CrewChief(id='cc1', name='Crew chief 1')
-        car1 = Car(number='1', car_type='Ford')
-        db.session.add_all([d1, t1, cc1, car1])
+        p1 = Person(id='p1', name='driver', country='USA')
+        p2 = Person(id='p2', name='owner', country='USA')
+        p3 = Person(id='p3', name='crew chief', country='USA')
+        db.session.add_all([p1, p2, p3])
         db.session.commit()
 
-        qr1 = QualifyingResult(race_id=race1.id, driver_id=d1.id, team_id=t1.id,
-                               car_id=car1.id, crew_chief_id=cc1.id, session=1,
+        t1 = Team(id='t1', name='Team 1', alias='team1', owner_id=p2.id)
+        car1 = Car(number='1', car_type='Ford', owner_id=p1.id)
+        db.session.add_all([t1, car1])
+        db.session.commit()
+
+        qr1 = QualifyingResult(race_id=race1.id, team_id=t1.id,
+                               car_id=car1.id, session=1,
                                position=1, lap_time=35.25)
-        qr2 = QualifyingResult(race_id=race1.id, driver_id=d1.id, team_id=t1.id,
-                               car_id=car1.id, crew_chief_id=cc1.id, session=2,
+        qr2 = QualifyingResult(race_id=race1.id, team_id=t1.id,
+                               car_id=car1.id, session=2,
                                position=1, lap_time=34.25)
         db.session.add_all([qr1, qr2])
+        db.session.commit()
+
+        qrp1 = QualifyingResultPerson(qualifying_result_id=qr1.id, person_id=p1.id, type='driver')
+        qrp2 = QualifyingResultPerson(qualifying_result_id=qr1.id, person_id=p3.id, type='crew-chief')
+        qrp3 = QualifyingResultPerson(qualifying_result_id=qr2.id, person_id=p1.id, type='driver')
+        qrp4 = QualifyingResultPerson(qualifying_result_id=qr2.id, person_id=p3.id, type='crew-chief')
+        db.session.add_all([qrp1, qrp2, qrp3, qrp4])
         db.session.commit()
 
         response = self.client.get('/api/s1/2013/qualifyingresults/2')
@@ -802,31 +813,35 @@ class QualifyingResultListTests(BaseTest):
         self.assertEquals(response.json, dict(qualifyingresults=[]))
 
         response = self.client.get('/api/s1/2013/qualifyingresults/1')
+        print response.json
         expect = {u'qualifyingresults': [{u'race': {u'id': u'race1', u'name': race1.name},
-                                          u'driver': {u'id': d1.id,
-                                          u'first_name': d1.first_name, u'last_name': d1.last_name},
-                                          u'team': {u'id': t1.id, u'name': t1.name},
-                                          u'car': {u'number': car1.number, u'car_type': car1.car_type},
-                                          u'crew_chief': {u'id': cc1.id, u'name': cc1.name},
-                                          u'session': 1, u'position': 1, u'lap_time': u'35.250'},
+                                          u'team': {u'id': t1.id, u'name': t1.name,
+                                                    u'owner': {u'id': 'p2', u'name': 'owner', u'country': 'USA'}},
+                                          u'car': {u'number': car1.number, u'car_type': car1.car_type,
+                                                   u'owner': {u'id': 'p1', u'name': 'driver', u'country': 'USA'}},
+                                          u'session': 1, u'position': 1, u'lap_time': u'35.250',
+                                          u'crew-chief': {u'id': 'p3', u'name': 'crew chief', u'country': 'USA'},
+                                          u'driver': {u'id': 'p1', u'name': 'driver', u'country': 'USA'}},
                                          {u'race': {u'id': u'race1', u'name': race1.name},
-                                          u'driver': {u'id': d1.id,
-                                          u'first_name': d1.first_name, u'last_name': d1.last_name},
-                                          u'team': {u'id': t1.id, u'name': t1.name},
-                                          u'car': {u'number': car1.number, u'car_type': car1.car_type},
-                                          u'crew_chief': {u'id': cc1.id, u'name': cc1.name},
-                                          u'session': 2, u'position': 1, u'lap_time': u'34.250'}]}
+                                          u'team': {u'id': t1.id, u'name': t1.name,
+                                                    u'owner': {u'id': 'p2', u'name': 'owner', u'country': 'USA'}},
+                                          u'car': {u'number': car1.number, u'car_type': car1.car_type,
+                                                   u'owner': {u'id': 'p1', u'name': 'driver', u'country': 'USA'}},
+                                          u'session': 2, u'position': 1, u'lap_time': u'34.250',
+                                          u'crew-chief': {u'id': 'p3', u'name': 'crew chief', u'country': 'USA'},
+                                          u'driver': {u'id': 'p1', u'name': 'driver', u'country': 'USA'}}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
         response = self.client.get('/api/s1/2013/qualifyingresults/1/2')
         expect = {u'qualifyingresults': [{u'race': {u'id': u'race1', u'name': race1.name},
-                                          u'driver': {u'id': d1.id,
-                                          u'first_name': d1.first_name, u'last_name': d1.last_name},
-                                          u'team': {u'id': t1.id, u'name': t1.name},
-                                          u'car': {u'number': car1.number, u'car_type': car1.car_type},
-                                          u'crew_chief': {u'id': cc1.id, u'name': cc1.name},
-                                          u'session': 2, u'position': 1, u'lap_time': u'34.250'}]}
+                                          u'team': {u'id': t1.id, u'name': t1.name,
+                                                    u'owner': {u'id': 'p2', u'name': 'owner', u'country': 'USA'}},
+                                          u'car': {u'number': car1.number, u'car_type': car1.car_type,
+                                                   u'owner': {u'id': 'p1', u'name': 'driver', u'country': 'USA'}},
+                                          u'session': 2, u'position': 1, u'lap_time': u'34.250',
+                                          u'crew-chief': {u'id': 'p3', u'name': 'crew chief', u'country': 'USA'},
+                                          u'driver': {u'id': 'p1', u'name': 'driver', u'country': 'USA'}}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 

@@ -465,33 +465,30 @@ class QualifyingResultList(Resource):
         'name': fields.String
     }
 
-    driver_fields = {
+    person_fields = {
         'id': fields.String,
-        'first_name': fields.String,
-        'last_name': fields.String
+        'name': fields.String,
+        'country': fields.String
     }
 
     team_fields = {
         'id': fields.String,
-        'name': fields.String
+        'name': fields.String,
+        'owner': fields.Nested(person_fields)
     }
 
     car_fields = {
         'number': fields.Integer,
-        'car_type': fields.String
-    }
-
-    crew_chief_fields = {
-        'id': fields.String,
-        'name': fields.String
+        'car_type': fields.String,
+        'owner': fields.Nested(person_fields)
     }
 
     qualifying_result_fields = {
         'race': fields.Nested(race_fields),
-        'driver': fields.Nested(driver_fields),
+        #'driver': fields.Nested(driver_fields),
         'team': fields.Nested(team_fields),
         'car': fields.Nested(car_fields),
-        'crew_chief': fields.Nested(crew_chief_fields),
+        #'crew_chief': fields.Nested(crew_chief_fields),
         'session': fields.Integer,
         'position': fields.Integer,
         'lap_time': fields.Arbitrary
@@ -504,6 +501,8 @@ class QualifyingResultList(Resource):
         /api/series/season/qualifyingresults/round/session  Qualifying results list on a given session
         '''
 
+        results = []
+
         if series and season and round:
             qualifyingresults = QualifyingResult.query.\
                 join(QualifyingResult.race).\
@@ -514,7 +513,18 @@ class QualifyingResultList(Resource):
         if session:
             qualifyingresults = qualifyingresults.filter(QualifyingResult.session == session)
 
-        return {'qualifyingresults': marshal(qualifyingresults.all(), self.qualifying_result_fields)}
+        qualifyingresults = qualifyingresults.all()
+
+        for result in qualifyingresults:
+            rslt = marshal(result, self.qualifying_result_fields)
+
+            for p in result.people:
+                prsn = marshal(p.person, self.person_fields)
+                rslt[p.type] = prsn
+
+            results.append(rslt)
+
+        return {'qualifyingresults': results}
 
 
 class PracticeResultList(Resource):
