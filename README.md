@@ -1,6 +1,9 @@
 Motorsports historic data API
 =============================
 
+![Old car crash](https://s3.amazonaws.com/pitrho-misc-01/images/historic-api-header.jpg "Old car crash")
+
+
 An API for motorsports historical data, starting with NASCAR data.
 Data include lists of Drivers, Teams, and Crew Chiefs along with Team/Car Standings
 and Race lists. Most endpoints allow variable specificity from 'all', down to
@@ -10,10 +13,10 @@ All Series designations conform to the convention specified below under
 __Series Designations__.
 
 
-# API Configuration & Initial Setup
+## API Configuration & Initial Setup
 The following section describes the steps necessary to set up the API from scratch.
 
-## Dependencies
+### Dependencies
 Begin by installing all required dependencies.
 We recommend using [virtualenv](https://pypi.python.org/pypi/virtualenv) to
 isolate this environment.
@@ -24,7 +27,7 @@ When you are in your environment, run:
 	pip install -r requirements.txt
 
 
-## Environment Variables
+### Environment Variables
 This requires some environment variables that are not tracked.
 Create a `.env` file that includes the following:
 
@@ -33,18 +36,21 @@ Create a `.env` file that includes the following:
 
 
 ## Initialize Database
-Requires having [Postgres.app](http://postgresapp.com) installed on your machine.
-First, create your empty database.
+Requires having [Postgres](http://www.postgresql.org/) (on a mac, we use [Postgres.app](http://postgresapp.com)) installed on your machine.
+First, create your empty database.  From the shell:
 
-	psql >> CREATE DATABASE "your_local_db_name";
+	createdb "your_local_db_name"
 
-Then establish the initial fixtures.
+Then create the tables.
 
 	honcho run python ./app/manage.py database upgrade
+
+(If there is no `migrations` folder, which is the case early on, while we're trying to finalize the models, before you run upgrade you'll want to run the following.)
+
 	honcho run python ./app/manage.py database migrate
 
 
-# Local Development
+## Local Development
 After you have initialized the application per `API Configuration & Initial Setup`,
 running the API locally is easy:
 
@@ -53,28 +59,30 @@ running the API locally is easy:
 Now you can hit the API by navigating to `http://127.0.0.1:5000/api/{endpoint}`
 
 
-# Production
+## Production
 You can deploy this to any production environment you choose.
 Below we describe how to deploy to [Heroku](http://www.heroku.com).
 
-## Create the application
+### Create the application
 Follow steps at Heroku.com
 
-## Push to application
+### Push to application
 
 	git push heroku master
 
 
-# Testing
+## Testing
 We use [nose](http://nose.readthedocs.org/en/latest/) for running tests.
-To run the full test suite make sure Postgres.app is running then use:
+To run the full test suite make sure Postgres is running then use:
 
-	honcho run nosetests -v test
+	nosetests -v test
 
+The testing database is `postgresql://localhost/historic_api_test` by
+default and can be overridden by specifying the `TEST_DATABASE_URL` variable in your environment.
 
-# Other Stuff
+## Other Stuff
 
-## Series Designations
+### Series Designations
 
 	* w - NASCAR Sprint Cup Series
 	* b - NASCAR Nationwide Series
@@ -86,7 +94,7 @@ To run the full test suite make sure Postgres.app is running then use:
 	* f - Formula One
 	* ga - GrandAm
 
-## Conventions
+### Pit Rho Conventions
 
 * We deploy most of our applications to [Heroku](http://heroku.com)
 and structure them as described in
@@ -97,7 +105,7 @@ and structure them as described in
 Python clone [honcho](https://github.com/nickstenning/honcho).
 
 
-## Packages commonly used at Pit Rho
+### Packages commonly used at Pit Rho
 
 * [Flask](http://flask.pocoo.org/) for the application framework;
 * [Flask-SQLAlchemy](http://pythonhosted.org/Flask-SQLAlchemy/) for the ORM;

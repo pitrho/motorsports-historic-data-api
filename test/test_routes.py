@@ -1,4 +1,5 @@
 import nose
+import psycopg2
 import datetime
 from flask.ext.testing import TestCase
 from app.manage import create_and_config_app, db
@@ -6,16 +7,88 @@ from app.models import Series, Team, Car, DriverStanding,\
     TeamStanding, Race, RaceResult, RaceStanding, RaceEntry, RaceEntryType, \
     QualifyingResult, PracticeResult, Person, RaceResultPerson,\
     QualifyingResultPerson, PracticeResultPerson, RaceEntryPerson
+from sqlalchemy.exc import OperationalError
+from psycopg2 import ProgrammingError
+import logging
+import os
+
+
+def run_postgres_commands(cmds, database="postgres"):
+    """ Run Postgres commands with autocommit.
+    """
+    logging.error("Creating database!")
+    if isinstance(cmds, (str, unicode)):
+        cmds = [cmds]
+    conn = psycopg2.connect(database=database)
+    conn.autocommit = True
+    cur = conn.cursor()
+    for cmd in cmds:
+        cur.execute(cmd)
+    cur.close()
+
 
 
 class BaseTest(TestCase):
 
+    def __init__(self, *args, **kwargs):
+        super(BaseTest, self).__init__(*args, **kwargs)
+
+        # If you don't want to use the default testing database url,
+        # specify one using TEST_DATABASE_URL in the environment.
+        dburl = os.environ.get('TEST_DATABASE_URL')
+        if dburl:
+            self.DBURL = dburl
+            self.DBNAME = dburl.split('/')[-1]
+            logging.error(dburl)
+        else:
+            self.DBNAME = "motorsports_api_test"
+            self.DBURL = "postgresql://localhost/{0}".format(self.DBNAME)
+
     def create_app(self):
-        self.app = create_and_config_app()
-        return self.app
+        overrides = {'DATABASE_URL': self.DBURL}
+        app = create_and_config_app(overrides)
+        return app
+
+    def db_doest_exist(self, e):
+        """ Tests if an exception is about the database not existing
+        """
+        return '"{0}" does not exist'.format(self.DBNAME) in e.message
+
+    def create_database(self):
+        """ Create our testing database
+        """
+        run_postgres_commands('CREATE DATABASE {0}'.format(self.DBNAME))
+
+    def drop_database(self):
+        """ Try to drop the database, ignoring exceptions
+            raised when it doesn't exist.
+        """
+        try:
+            run_postgres_commands('DROP DATABASE {0}'.format(self.DBNAME))
+        except ProgrammingError, e:
+            if not self.db_doest_exist(e):
+                raise
+
+    def create_database_and_tables(self):
+        """ Create the database
+        """
+        try:
+
+            # Create the tables from the SQLAlchemy models
+            db.drop_all()
+            db.create_all()
+        except OperationalError, e:
+
+            # If the exception was related to a missing database,
+            # try to create it and then re-run the create_all command.
+            if self.db_doest_exist(e):
+                self.create_database()
+                db.create_all()
+            else:
+                raise
 
     def setUp(self):
-        db.create_all()
+        self.create_database_and_tables()
 
     def tearDown(self):
         db.session.remove()
