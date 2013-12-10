@@ -3,7 +3,7 @@ import psycopg2
 import datetime
 from flask.ext.testing import TestCase
 from app.manage import create_and_config_app, db
-from app.models import Series, Team, Car, DriverStanding,\
+from app.models import Series, Team, Car, DriverStanding, RaceTrack,\
     TeamStanding, Race, RaceResult, RaceStanding, RaceEntry, RaceEntryType, \
     QualifyingResult, PracticeResult, Person, RaceResultPerson,\
     QualifyingResultPerson, PracticeResultPerson, RaceEntryPerson
@@ -25,7 +25,6 @@ def run_postgres_commands(cmds, database="postgres"):
     for cmd in cmds:
         cur.execute(cmd)
     cur.close()
-
 
 
 class BaseTest(TestCase):
@@ -533,16 +532,22 @@ class RaceListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', round=1, name='Race 1', season=2012, site='Site 1',
-                     circuit_name='Circuit 1', city='City 1', state='ST',
+        rt1 = RaceTrack(site='Site 1', circuit_name='Circuit 1',
+                        city='City 1', state='ST', country='USA')
+        rt2 = RaceTrack(site='Site 2', circuit_name='Circuit 2',
+                        city='City 2', state='ST', country='USA')
+        rt3 = RaceTrack(site='Site 3', circuit_name='Circuit 3',
+                        city='City 3', state='ST', country='USA')
+        db.session.add_all([rt1, rt2, rt3])
+        db.session.commit()
+
+        race1 = Race(id='race1', round=1, name='Race 1', season=2012, race_track_id=rt1.id,
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
-        race2 = Race(id='race2', round=2, name='Race 2', season=2013, site='Site 2',
-                     circuit_name='Circuit 2', city='City 2', state='ST',
+        race2 = Race(id='race2', round=2, name='Race 2', season=2013, race_track_id=rt2.id,
                      date=datetime.datetime.now(), laps=370, length=1.6, distance=550,
                      series=s1.id)
-        race3 = Race(id='race3', round=3, name='Race 3', season=2013, site='Site 3',
-                     circuit_name='Circuit 3', city='City 3', state='ST',
+        race3 = Race(id='race3', round=3, name='Race 3', season=2013, race_track_id=rt3.id,
                      date=datetime.datetime.now(), laps=400, length=1.7, distance=570,
                      series=s1.id)
         db.session.add_all([race1, race2, race3])
@@ -550,15 +555,15 @@ class RaceListTests(BaseTest):
 
         response = self.client.get('/api/s1/2013/races')
         expect = {u'races': [{u'id': u'race2', u'name': u'Race 2', u'season': 2013,
-                              u'site': u'Site 2', u'circuit_name': u'Circuit 2',
-                              u'city': u'City 2', u'state': 'ST', u'date': str(race2.date),
-                              u'laps': 370, u'length': u'1.600', u'distance': u'550.0',
-                              u'series': u's1'},
+                              u'race_track': {u'site': u'Site 2', u'circuit_name': u'Circuit 2',
+                                              u'city': u'City 2', u'state': 'ST', u'country': u'USA'},
+                              u'date': str(race2.date), u'laps': 370, u'length': u'1.600',
+                              u'distance': u'550.0', u'series': u's1'},
                              {u'id': u'race3', u'name': u'Race 3', u'season': 2013,
-                              u'site': u'Site 3', u'circuit_name': u'Circuit 3',
-                              u'city': u'City 3', u'state': 'ST', u'date': str(race3.date),
-                              u'laps': 400, u'length': u'1.700', u'distance': u'570.0',
-                              u'series': u's1'}]}
+                              u'race_track': {u'site': u'Site 3', u'circuit_name': u'Circuit 3',
+                                              u'city': u'City 3', u'state': 'ST', u'country': u'USA'},
+                              u'date': str(race3.date), u'laps': 400, u'length': u'1.700',
+                              u'distance': u'570.0', u'series': u's1'}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 

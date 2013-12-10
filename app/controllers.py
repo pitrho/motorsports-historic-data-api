@@ -244,14 +244,19 @@ class TeamStandingsList(Resource):
 
 class RaceList(Resource):
 
-    race_fields = {
-        'id': fields.String,
-        'name': fields.String,
-        'season': fields.Integer,
+    race_track_list = {
         'site': fields.String,
         'circuit_name': fields.String,
         'city': fields.String,
         'state': fields.String,
+        'country': fields.String
+    }
+
+    race_fields = {
+        'id': fields.String,
+        'name': fields.String,
+        'season': fields.Integer,
+        'race_track': fields.Nested(race_track_list),
         'date': fields.String,
         'laps': fields.Integer,
         'length': fields.Arbitrary,

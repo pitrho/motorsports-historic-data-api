@@ -90,6 +90,18 @@ class TeamStanding(db.Model):
     car = db.relationship('Car')
 
 
+class RaceTrack(db.Model):
+
+    __tablename__ = 'race_tracks'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    site = db.Column(db.String(50), nullable=False)
+    circuit_name = db.Column(db.String(100), nullable=False)
+    city = db.Column(db.String(50), nullable=False)
+    state = db.Column(db.String(2), nullable=True)
+    country = db.Column(db.String(50), nullable=False)
+
+
 class Race(db.Model):
 
     __tablename__ = 'races'
@@ -98,10 +110,7 @@ class Race(db.Model):
     round = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(100), nullable=False)
     season = db.Column(db.Integer, nullable=False)
-    site = db.Column(db.String(50), nullable=False)
-    circuit_name = db.Column(db.String(100), nullable=False)
-    city = db.Column(db.String(50), nullable=False)
-    state = db.Column(db.String(2), nullable=False)
+    race_track_id = db.Column(db.Integer, db.ForeignKey('race_tracks.id'), nullable=False)
     date = db.Column(db.DateTime, nullable=False)
     laps = db.Column(db.Integer, nullable=False)
     length = db.Column(db.Numeric(5, 3), nullable=False)
@@ -109,6 +118,7 @@ class Race(db.Model):
     series = db.Column(db.String(5), db.ForeignKey('series.id'), nullable=False)
 
     race_types = db.relationship('RaceType', secondary='races_types')
+    race_track = db.relationship('RaceTrack')
 
 
 class RaceType(db.Model):
