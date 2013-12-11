@@ -13,23 +13,25 @@ class PeopleList(Resource):
         'country': fields.String(attribute='person.country')
     }
 
-    def get(self, series=None, season=None):
-        path = request.path.split("/")
-        person_type = (path[-1])[:-1]
+    def get(self, version, series=None, season=None):
+        if version == 'v1.0':
 
-        if person_type in PersonType.enums:
-            people = RaceResultPerson.query.\
-                filter(RaceResultPerson.type == person_type)
+            path = request.path.split("/")
+            person_type = (path[-1])[:-1]
 
-            if series:
-                people = people.join(RaceResultPerson.race_result).\
-                    join(RaceResult.race).\
-                    filter(Race.series == series)
+            if person_type in PersonType.enums:
+                people = RaceResultPerson.query.\
+                    filter(RaceResultPerson.type == person_type)
 
-            if season:
-                people = people.filter(Race.season == season)
+                if series:
+                    people = people.join(RaceResultPerson.race_result).\
+                        join(RaceResult.race).\
+                        filter(Race.series == series)
 
-            return {path[-1]: marshal(people.all(), self.person_fields)}
+                if season:
+                    people = people.filter(Race.season == season)
+
+                return {path[-1]: marshal(people.all(), self.person_fields)}
 
         return {path[-1]: []}
 
@@ -42,7 +44,7 @@ class DriverList(Resource):
         'country': fields.String(attribute='person.country')
     }
 
-    def get(self, series=None, season=None):
+    def get(self, version, series=None, season=None):
         '''
         Handles routes
         /api/drivers                All drivers
@@ -50,18 +52,22 @@ class DriverList(Resource):
         /api/series/season/drivers  Drivers from a series and season
         '''
 
-        drivers = RaceResultPerson.query.\
-            filter(RaceResultPerson.type == 'driver')
+        if version == 'v1.0':
 
-        if series:
-            drivers = drivers.join(RaceResultPerson.race_result).\
-                join(RaceResult.race).\
-                filter(Race.series == series)
+            drivers = RaceResultPerson.query.\
+                filter(RaceResultPerson.type == 'driver')
 
-        if season:
-            drivers = drivers.filter(Race.season == season)
+            if series:
+                drivers = drivers.join(RaceResultPerson.race_result).\
+                    join(RaceResult.race).\
+                    filter(Race.series == series)
 
-        return {'drivers': marshal(drivers.all(), self.driver_fields)}
+            if season:
+                drivers = drivers.filter(Race.season == season)
+
+            return {'drivers': marshal(drivers.all(), self.driver_fields)}
+
+        return {'drivers': []}
 
 
 class TeamList(Resource):
@@ -79,7 +85,7 @@ class TeamList(Resource):
         'owner': fields.Nested(owner_fields)
     }
 
-    def get(self, series=None, season=None):
+    def get(self, version, series=None, season=None):
         '''
         Handles routes
         /api/teams                  All teams
@@ -87,19 +93,23 @@ class TeamList(Resource):
         /api/series/season/teams    Teams from a series and season
         '''
 
-        # /api/teams
-        teams = Team.query
+        if version == 'v1.0':
 
-        # /api/series/drivers
-        if series:
-            teams = teams.join(Team.races).\
-                filter(Race.series == series)
+            # /api/teams
+            teams = Team.query
 
-        # /api/series/season/drivers
-        if season:
-            teams = teams.filter(Race.season == season)
+            # /api/series/drivers
+            if series:
+                teams = teams.join(Team.races).\
+                    filter(Race.series == series)
 
-        return {'teams': marshal(teams.all(), self.teams_fields)}
+            # /api/series/season/drivers
+            if season:
+                teams = teams.filter(Race.season == season)
+
+            return {'teams': marshal(teams.all(), self.teams_fields)}
+
+        return {'teams': []}
 
 
 class CarList(Resource):
@@ -117,7 +127,7 @@ class CarList(Resource):
         'owner': fields.Nested(owner_fields)
     }
 
-    def get(self, series=None, season=None):
+    def get(self, version, series=None, season=None):
         '''
         Handles routes
         /api/cars                 All cars
@@ -125,19 +135,23 @@ class CarList(Resource):
         /api/series/season/cars   Cars from a series and season
         '''
 
-        # /api/cars
-        cars = Car.query
+        if version == 'v1.0':
 
-        # /api/series/crewchiefs
-        if series:
-            cars = cars.join(Car.races).\
-                filter(Race.series == series)
+            # /api/cars
+            cars = Car.query
 
-        # /api/series/season/crewchiefs
-        if season:
-            cars = cars.filter(Race.season == season)
+            # /api/series/crewchiefs
+            if series:
+                cars = cars.join(Car.races).\
+                    filter(Race.series == series)
 
-        return {'cars': marshal(cars.all(), self.car_fields)}
+            # /api/series/season/crewchiefs
+            if season:
+                cars = cars.filter(Race.season == season)
+
+            return {'cars': marshal(cars.all(), self.car_fields)}
+
+        return {'cars': []}
 
 
 class DriverStandingsList(Resource):
@@ -177,18 +191,20 @@ class DriverStandingsList(Resource):
         'top10': fields.Integer
     }
 
-    def get(self, series=None, season=None):
+    def get(self, version, series=None, season=None):
         '''
         Handles routes
         /api/series/season/driverstandings Driver standings from a series and season
         '''
 
-        # /api/series/season/driverstandings
-        if series is not None and season is not None:
-            driverstandings = DriverStanding.query.\
-                filter(DriverStanding.series == series).\
-                filter(DriverStanding.season == season)
-            return {'driverstandings': marshal(driverstandings.all(), self.driver_standings_fields)}
+        if version == 'v1.0':
+
+            # /api/series/season/driverstandings
+            if series is not None and season is not None:
+                driverstandings = DriverStanding.query.\
+                    filter(DriverStanding.series == series).\
+                    filter(DriverStanding.season == season)
+                return {'driverstandings': marshal(driverstandings.all(), self.driver_standings_fields)}
 
         return {'driverstandings': []}
 
@@ -226,18 +242,20 @@ class TeamStandingsList(Resource):
         'poles': fields.Integer
     }
 
-    def get(self, series=None, season=None):
+    def get(self, version, series=None, season=None):
         '''
         Handles routes
         /api/series/season/teamstandings  Team standings from a series and season
         '''
 
-        # /api/series/season/teamstandings
-        if series is not None and season is not None:
-            teamstandings = TeamStanding.query.\
-                filter(TeamStanding.series == series).\
-                filter(TeamStanding.season == season)
-            return {'teamstandings': marshal(teamstandings.all(), self.team_standings_fields)}
+        if version == 'v1.0':
+
+            # /api/series/season/teamstandings
+            if series is not None and season is not None:
+                teamstandings = TeamStanding.query.\
+                    filter(TeamStanding.series == series).\
+                    filter(TeamStanding.season == season)
+                return {'teamstandings': marshal(teamstandings.all(), self.team_standings_fields)}
 
         return {'teamstandings': []}
 
@@ -264,19 +282,21 @@ class RaceList(Resource):
         'series': fields.String
     }
 
-    def get(self, series=None, season=None):
+    def get(self, version, series=None, season=None):
         '''
         Handles routes
         /api/series/season/races  Races from a series and season
         '''
 
-        # /api/series/season/races
-        if series is not None and season is not None:
-            races = Race.query.\
-                filter(Race.series == series).\
-                filter(Race.season == season).\
-                order_by(Race.date.asc())
-            return {'races': marshal(races.all(), self.race_fields)}
+        if version == 'v1.0':
+
+            # /api/series/season/races
+            if series is not None and season is not None:
+                races = Race.query.\
+                    filter(Race.series == series).\
+                    filter(Race.season == season).\
+                    order_by(Race.date.asc())
+                return {'races': marshal(races.all(), self.race_fields)}
 
         return {'races': []}
 
@@ -294,18 +314,20 @@ class RaceStandingList(Resource):
         'victory_margin': fields.Arbitrary
     }
 
-    def get(self, race_id=None):
+    def get(self, version, race_id=None):
         '''
         Handles routes
         /api/racestandings/race_id      Race standings for a given race
         '''
 
-        # /api/racestandings/race_id
-        if race_id is not None:
-            racestandings = RaceStanding.query.\
-                filter(RaceStanding.race_id == race_id)
+        if version == 'v1.0':
 
-            return {'racestandings': marshal(racestandings.all(), self.race_standing_fields)}
+            # /api/racestandings/race_id
+            if race_id is not None:
+                racestandings = RaceStanding.query.\
+                    filter(RaceStanding.race_id == race_id)
+
+                return {'racestandings': marshal(racestandings.all(), self.race_standing_fields)}
 
         return {'racestandings': []}
 
@@ -341,7 +363,7 @@ class RaceEntryList(Resource):
         'car': fields.Nested(car_fields)
     }
 
-    def get(self, series=None, season=None, entry_type=None, round=None):
+    def get(self, version, series=None, season=None, entry_type=None, round=None):
         '''
         Handles routes
         /api/series/season/raceentry/entry_type/race_id      Race entry list
@@ -349,25 +371,27 @@ class RaceEntryList(Resource):
 
         results = []
 
-        if series and season and entry_type and round:
-            raceentry = RaceEntry.query.\
-                join(RaceEntry.race).\
-                join(RaceEntry.entry_type).\
-                filter(Race.series == series).\
-                filter(Race.season == season).\
-                filter(Race.round == round).\
-                filter(RaceEntryType.entry_type == entry_type)
+        if version == 'v1.0':
 
-            raceentry = raceentry.all()
+            if series and season and entry_type and round:
+                raceentry = RaceEntry.query.\
+                    join(RaceEntry.race).\
+                    join(RaceEntry.entry_type).\
+                    filter(Race.series == series).\
+                    filter(Race.season == season).\
+                    filter(Race.round == round).\
+                    filter(RaceEntryType.entry_type == entry_type)
 
-            for result in raceentry:
-                rslt = marshal(result, self.race_entry_fields)
+                raceentry = raceentry.all()
 
-                for p in result.people:
-                    prsn = marshal(p.person, self.person_fields)
-                    rslt[p.type] = prsn
+                for result in raceentry:
+                    rslt = marshal(result, self.race_entry_fields)
 
-                results.append(rslt)
+                    for p in result.people:
+                        prsn = marshal(p.person, self.person_fields)
+                        rslt[p.type] = prsn
+
+                    results.append(rslt)
 
         return {'raceentry': results}
 
@@ -410,7 +434,7 @@ class RaceResultList(Resource):
         'money': fields.Arbitrary
     }
 
-    def get(self, series=None, season=None, round=None):
+    def get(self, version, series=None, season=None, round=None):
         '''
         Handles routes
         /api/series/season/raceresults/round      Race results list
@@ -418,23 +442,25 @@ class RaceResultList(Resource):
 
         results = []
 
-        if series and season and round:
-            raceresults = RaceResult.query.\
-                join(RaceResult.race).\
-                filter(Race.series == series).\
-                filter(Race.season == season).\
-                filter(Race.round == round)
+        if version == 'v1.0':
 
-            raceresults = raceresults.all()
+            if series and season and round:
+                raceresults = RaceResult.query.\
+                    join(RaceResult.race).\
+                    filter(Race.series == series).\
+                    filter(Race.season == season).\
+                    filter(Race.round == round)
 
-            for result in raceresults:
-                rslt = marshal(result, self.race_result_fields)
+                raceresults = raceresults.all()
 
-                for p in result.people:
-                    prsn = marshal(p.person, self.person_fields)
-                    rslt[p.type] = prsn
+                for result in raceresults:
+                    rslt = marshal(result, self.race_result_fields)
 
-                results.append(rslt)
+                    for p in result.people:
+                        prsn = marshal(p.person, self.person_fields)
+                        rslt[p.type] = prsn
+
+                    results.append(rslt)
 
         return {'raceresults': results}
 
@@ -473,7 +499,7 @@ class QualifyingResultList(Resource):
         'lap_time': fields.Arbitrary
     }
 
-    def get(self, series=None, season=None, round=None, session=None):
+    def get(self, version, series=None, season=None, round=None, session=None):
         '''
         Handles routes
         /api/series/season/qualifyingresults/round          Qualifying results list
@@ -482,26 +508,28 @@ class QualifyingResultList(Resource):
 
         results = []
 
-        if series and season and round:
-            qualifyingresults = QualifyingResult.query.\
-                join(QualifyingResult.race).\
-                filter(Race.series == series).\
-                filter(Race.season == season).\
-                filter(Race.round == round)
+        if version == 'v1.0':
 
-        if session:
-            qualifyingresults = qualifyingresults.filter(QualifyingResult.session == session)
+            if series and season and round:
+                qualifyingresults = QualifyingResult.query.\
+                    join(QualifyingResult.race).\
+                    filter(Race.series == series).\
+                    filter(Race.season == season).\
+                    filter(Race.round == round)
 
-        qualifyingresults = qualifyingresults.all()
+            if session:
+                qualifyingresults = qualifyingresults.filter(QualifyingResult.session == session)
 
-        for result in qualifyingresults:
-            rslt = marshal(result, self.qualifying_result_fields)
+            qualifyingresults = qualifyingresults.all()
 
-            for p in result.people:
-                prsn = marshal(p.person, self.person_fields)
-                rslt[p.type] = prsn
+            for result in qualifyingresults:
+                rslt = marshal(result, self.qualifying_result_fields)
 
-            results.append(rslt)
+                for p in result.people:
+                    prsn = marshal(p.person, self.person_fields)
+                    rslt[p.type] = prsn
+
+                results.append(rslt)
 
         return {'qualifyingresults': results}
 
@@ -540,7 +568,7 @@ class PracticeResultList(Resource):
         'lap_time': fields.Arbitrary
     }
 
-    def get(self, series=None, season=None, round=None, session=None):
+    def get(self, version, series=None, season=None, round=None, session=None):
         '''
         Handles routes
         /api/series/season/practiceresults/round              Practice results list
@@ -549,25 +577,27 @@ class PracticeResultList(Resource):
 
         results = []
 
-        if series and season and round:
-            practiceresults = PracticeResult.query.\
-                join(PracticeResult.race).\
-                filter(Race.series == series).\
-                filter(Race.season == season).\
-                filter(Race.round == round)
+        if version == 'v1.0':
 
-        if session:
-            practiceresults = practiceresults.filter(PracticeResult.session == session)
+            if series and season and round:
+                practiceresults = PracticeResult.query.\
+                    join(PracticeResult.race).\
+                    filter(Race.series == series).\
+                    filter(Race.season == season).\
+                    filter(Race.round == round)
 
-        practiceresults = practiceresults.all()
+            if session:
+                practiceresults = practiceresults.filter(PracticeResult.session == session)
 
-        for result in practiceresults:
-            rslt = marshal(result, self.practice_result_fields)
+            practiceresults = practiceresults.all()
 
-            for p in result.people:
-                prsn = marshal(p.person, self.person_fields)
-                rslt[p.type] = prsn
+            for result in practiceresults:
+                rslt = marshal(result, self.practice_result_fields)
 
-            results.append(rslt)
+                for p in result.people:
+                    prsn = marshal(p.person, self.person_fields)
+                    rslt[p.type] = prsn
+
+                results.append(rslt)
 
         return {'practiceresults': results}

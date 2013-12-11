@@ -97,10 +97,20 @@ class BaseTest(TestCase):
 
 class DriverListTests(BaseTest):
 
+    def test_no_version(self, ):
+        '''should return no drivers with missing or bad version'''
+
+        response = self.client.get('/api/drivers')
+        self.assertEqual(response._status_code, 404)
+
+        response = self.client.get('/api/v0.0/drivers')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(drivers=[]))
+
     def test_no_drivers(self):
         '''should return no drivers'''
 
-        response = self.client.get('/api/drivers')
+        response = self.client.get('/api/v1.0/drivers')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(drivers=[]))
 
@@ -111,12 +121,17 @@ class DriverListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
-                     circuit_name='Circuit 1', city='City 1', state='ST',
+        rt1 = RaceTrack(site='Site 1', circuit_name='Circuit 1',
+                        city='City 1', state='ST', country='USA')
+        rt2 = RaceTrack(site='Site 2', circuit_name='Circuit 2',
+                        city='City 2', state='ST', country='USA')
+        db.session.add_all([rt1, rt2])
+        db.session.commit()
+
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, race_track_id=rt1.id,
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
-        race2 = Race(id='race2', round=1, name='Race 1', season=2012, site='Site 1',
-                     circuit_name='Circuit 1', city='City 1', state='ST',
+        race2 = Race(id='race2', round=1, name='Race 1', season=2012, race_track_id=rt2.id,
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
         db.session.add_all([race1, race2])
@@ -151,19 +166,19 @@ class DriverListTests(BaseTest):
         db.session.add_all([rrp1, rrp2, rrp3, rrp4])
         db.session.commit()
 
-        response = self.client.get('/api/drivers')
+        response = self.client.get('/api/v1.0/drivers')
         expect = {u'drivers': [{u'country': u'USA', u'name': u'driver 1', u'id': u'p1'},
                                {u'country': u'USA', u'name': u'driver 2', u'id': u'p2'}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
-        response = self.client.get('/api/s1/drivers')
+        response = self.client.get('/api/v1.0/s1/drivers')
         expect = {u'drivers': [{u'country': u'USA', u'name': u'driver 1', u'id': u'p1'},
                                {u'country': u'USA', u'name': u'driver 2', u'id': u'p2'}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
-        response = self.client.get('/api/s1/2013/drivers')
+        response = self.client.get('/api/v1.0/s1/2013/drivers')
         expect = {u'drivers': [{u'country': u'USA', u'name': u'driver 1', u'id': u'p1'}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
@@ -171,10 +186,20 @@ class DriverListTests(BaseTest):
 
 class TeamListTests(BaseTest):
 
+    def test_no_version(self):
+        '''shouldr return no drivers with missing or bad version'''
+
+        response = self.client.get('/api/teams')
+        self.assertEqual(response._status_code, 404)
+
+        response = self.client.get('/api/v0.0/teams')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(teams=[]))
+
     def test_no_teams(self):
         '''should return no teams'''
 
-        response = self.client.get('/api/teams')
+        response = self.client.get('/api/v1.0/teams')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(teams=[]))
 
@@ -191,7 +216,7 @@ class TeamListTests(BaseTest):
         db.session.add_all([t1, t2])
         db.session.commit()
 
-        response = self.client.get('/api/teams')
+        response = self.client.get('/api/v1.0/teams')
         expect = {u'teams': [{u'id': u't1', u'name': u'Team 1', u'alias': u'team1',
                               u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'}},
                              {u'id': u't2', u'name': u'Team 2', u'alias': u'team2',
@@ -206,8 +231,12 @@ class TeamListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
-                     circuit_name='Circuit 1', city='City 1', state='ST',
+        rt1 = RaceTrack(site='Site 1', circuit_name='Circuit 1',
+                        city='City 1', state='ST', country='USA')
+        db.session.add(rt1)
+        db.session.commit()
+
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, race_track_id=rt1.id,
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
         db.session.add(race1)
@@ -234,7 +263,7 @@ class TeamListTests(BaseTest):
         db.session.add(rr1)
         db.session.commit()
 
-        response = self.client.get('/api/s1/teams')
+        response = self.client.get('/api/v1.0/s1/teams')
         expect = {u'teams': [{u'id': u't1', u'name': u'Team 1', u'alias': u'team1',
                               u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'}}]}
         self.assertEqual(response._status_code, 200)
@@ -247,8 +276,12 @@ class TeamListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
-                     circuit_name='Circuit 1', city='City 1', state='ST',
+        rt1 = RaceTrack(site='Site 1', circuit_name='Circuit 1',
+                        city='City 1', state='ST', country='USA')
+        db.session.add(rt1)
+        db.session.commit()
+
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, race_track_id=rt1.id,
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
         db.session.add(race1)
@@ -275,11 +308,11 @@ class TeamListTests(BaseTest):
         db.session.add(rr1)
         db.session.commit()
 
-        response = self.client.get('/api/s1/2012/teams')
+        response = self.client.get('/api/v1.0/s1/2012/teams')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(teams=[]))
 
-        response = self.client.get('/api/s1/2013/teams')
+        response = self.client.get('/api/v1.0/s1/2013/teams')
         expect = {u'teams': [{u'id': u't1', u'name': u'Team 1', u'alias': u'team1',
                               u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'}}]}
         self.assertEqual(response._status_code, 200)
@@ -288,10 +321,20 @@ class TeamListTests(BaseTest):
 
 class CarListTests(BaseTest):
 
+    def test_no_version(self):
+        '''should return no cars with missing or bad version'''
+
+        response = self.client.get('/api/cars')
+        self.assertEqual(response._status_code, 404)
+
+        response = self.client.get('/api/v0.0/cars')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(cars=[]))
+
     def test_no_cars(self):
         '''should return no cars'''
 
-        response = self.client.get('/api/cars')
+        response = self.client.get('/api/v1.0/cars')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(cars=[]))
 
@@ -308,7 +351,7 @@ class CarListTests(BaseTest):
         db.session.add_all([car1, car2])
         db.session.commit()
 
-        response = self.client.get('/api/cars')
+        response = self.client.get('/api/v1.0/cars')
         expect = {u'cars': [{u'id': u'1', u'number': '1', u'car_type': u'Ford',
                              u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'}},
                             {u'id': u'2', u'number': '2', u'car_type': u'Chevy',
@@ -323,8 +366,12 @@ class CarListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
-                     circuit_name='Circuit 1', city='City 1', state='ST',
+        rt1 = RaceTrack(site='Site 1', circuit_name='Circuit 1',
+                        city='City 1', state='ST', country='USA')
+        db.session.add(rt1)
+        db.session.commit()
+
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, race_track_id=rt1.id,
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
         db.session.add(race1)
@@ -351,7 +398,7 @@ class CarListTests(BaseTest):
         db.session.add(rr1)
         db.session.commit()
 
-        response = self.client.get('/api/s1/cars')
+        response = self.client.get('/api/v1.0/s1/cars')
         expect = {u'cars': [{u'id': u'1', u'number': '1', u'car_type': u'Ford',
                              u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'}}]}
         self.assertEqual(response._status_code, 200)
@@ -364,8 +411,12 @@ class CarListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
-                     circuit_name='Circuit 1', city='City 1', state='ST',
+        rt1 = RaceTrack(site='Site 1', circuit_name='Circuit 1',
+                        city='City 1', state='ST', country='USA')
+        db.session.add(rt1)
+        db.session.commit()
+
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, race_track_id=rt1.id,
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
         db.session.add(race1)
@@ -392,11 +443,11 @@ class CarListTests(BaseTest):
         db.session.add(rr1)
         db.session.commit()
 
-        response = self.client.get('/api/s1/2012/cars')
+        response = self.client.get('/api/v1.0/s1/2012/cars')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(cars=[]))
 
-        response = self.client.get('/api/s1/2013/cars')
+        response = self.client.get('/api/v1.0/s1/2013/cars')
         expect = {u'cars': [{u'id': u'1', u'number': '1', u'car_type': u'Ford',
                              u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'}}]}
         self.assertEqual(response._status_code, 200)
@@ -405,10 +456,20 @@ class CarListTests(BaseTest):
 
 class DriverStandingsListTests(BaseTest):
 
+    def test_no_version(self):
+        '''should return no driver standings with missing or bad version'''
+
+        response = self.client.get('/api/s1/2013/driverstandings')
+        self.assertEqual(response._status_code, 404)
+
+        response = self.client.get('/api/v0.0/s1/2013/driverstandings')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(driverstandings=[]))
+
     def test_no_driver_standings(self):
         '''should return no driver standings'''
 
-        response = self.client.get('/api/s1/2013/driverstandings')
+        response = self.client.get('/api/v1.0/s1/2013/driverstandings')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(driverstandings=[]))
 
@@ -440,7 +501,7 @@ class DriverStandingsListTests(BaseTest):
         db.session.add_all([ds1, ds2])
         db.session.commit()
 
-        response = self.client.get('/api/s1/2013/driverstandings')
+        response = self.client.get('/api/v1.0/s1/2013/driverstandings')
         expect = {u'driverstandings': [{u'id': 1,
                                         u'driver': {u'id': 'p1', u'name': 'driver 1', u'country': 'USA'},
                                         u'car': {u'id': u'1', u'number': '1', u'car_type': u'Ford',
@@ -461,10 +522,20 @@ class DriverStandingsListTests(BaseTest):
 
 class TeamStandingsListTests(BaseTest):
 
+    def test_no_version(self):
+        '''should return no team standings with missing or bad version'''
+
+        response = self.client.get('/api/s1/2013/teamstandings')
+        self.assertEqual(response._status_code, 404)
+
+        response = self.client.get('/api/v0.0/s1/2013/teamstandings')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(teamstandings=[]))
+
     def test_no_team_standings(self):
         '''should return no team standings'''
 
-        response = self.client.get('/api/s1/2013/teamstandings')
+        response = self.client.get('/api/v1.0/s1/2013/teamstandings')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(teamstandings=[]))
 
@@ -497,7 +568,7 @@ class TeamStandingsListTests(BaseTest):
         db.session.add_all([ts1, ts2])
         db.session.commit()
 
-        response = self.client.get('/api/s1/2013/teamstandings')
+        response = self.client.get('/api/v1.0/s1/2013/teamstandings')
         expect = {u'teamstandings': [{u'id': 1,
                                       u'team': {u'id': u't1', u'name': u'Team 1', u'alias': u'team1',
                                       u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'}},
@@ -518,10 +589,20 @@ class TeamStandingsListTests(BaseTest):
 
 class RaceListTests(BaseTest):
 
+    def test_no_version(self):
+        '''should return no races with missing or bad version'''
+
+        response = self.client.get('/api/s1/2013/races')
+        self.assertEqual(response._status_code, 404)
+
+        response = self.client.get('/api/v0.0/s1/2013/races')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(races=[]))
+
     def test_no_races(self):
         '''should return no races'''
 
-        response = self.client.get('/api/s1/2013/races')
+        response = self.client.get('/api/v1.0/s1/2013/races')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(races=[]))
 
@@ -553,7 +634,7 @@ class RaceListTests(BaseTest):
         db.session.add_all([race1, race2, race3])
         db.session.commit()
 
-        response = self.client.get('/api/s1/2013/races')
+        response = self.client.get('/api/v1.0/s1/2013/races')
         expect = {u'races': [{u'id': u'race2', u'name': u'Race 2', u'season': 2013,
                               u'race_track': {u'site': u'Site 2', u'circuit_name': u'Circuit 2',
                                               u'city': u'City 2', u'state': 'ST', u'country': u'USA'},
@@ -570,10 +651,20 @@ class RaceListTests(BaseTest):
 
 class RaceStandingListTests(BaseTest):
 
+    def test_no_version(self):
+        '''should return no race standings with missing or bad version'''
+
+        response = self.client.get('/api/racestandings/r1')
+        self.assertEqual(response._status_code, 404)
+
+        response = self.client.get('/api/v0.0/racestandings/r1')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(racestandings=[]))
+
     def test_no_race_standings(self):
         '''should return no race standings'''
 
-        response = self.client.get('/api/racestandings/r1')
+        response = self.client.get('/api/v1.0/racestandings/r1')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(racestandings=[]))
 
@@ -586,12 +677,17 @@ class RaceStandingListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', round=2, name='Race 1', season=2013, site='Site 1',
-                     circuit_name='Circuit 1', city='City 1', state='ST',
+        rt1 = RaceTrack(site='Site 1', circuit_name='Circuit 1',
+                        city='City 1', state='ST', country='USA')
+        rt2 = RaceTrack(site='Site 2', circuit_name='Circuit 2',
+                        city='City 2', state='ST', country='USA')
+        db.session.add_all([rt1, rt2])
+        db.session.commit()
+
+        race1 = Race(id='race1', round=2, name='Race 1', season=2013, race_track_id=rt1.id,
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
-        race2 = Race(id='race2', round=3, name='Race 2', season=2013, site='Site 2',
-                     circuit_name='Circuit 2', city='City 2', state='ST',
+        race2 = Race(id='race2', round=3, name='Race 2', season=2013, race_track_id=rt2.id,
                      date=datetime.datetime.now(), laps=370, length=1.6, distance=550,
                      series=s1.id)
 
@@ -604,7 +700,7 @@ class RaceStandingListTests(BaseTest):
         db.session.add(rs1)
         db.session.commit()
 
-        response = self.client.get('/api/racestandings/race1')
+        response = self.client.get('/api/v1.0/racestandings/race1')
         expect = {u'racestandings': [{u'race_id': u'race1', u'race_time': str(rs1.race_time),
                                       u'caution_flags': 5, u'caution_flag_laps': 30,
                                       u'lead_changes': 20, u'pole_speed': u'100.000',
@@ -615,12 +711,24 @@ class RaceStandingListTests(BaseTest):
 
 class RaceEntryListTests(BaseTest):
 
+    def test_no_version(self):
+        '''
+        should return no race entries with missing or bad version
+        '''
+
+        response = self.client.get('/api/s1/2013/raceentry/type1/1')
+        self.assertEqual(response._status_code, 404)
+
+        response = self.client.get('/api/v0.0/s1/2013/raceentry/type1/1')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(raceentry=[]))
+
     def test_no_race_entry(self):
         '''
         should return no race entries
         '''
 
-        response = self.client.get('/api/s1/2013/raceentry/type1/1')
+        response = self.client.get('/api/v1.0/s1/2013/raceentry/type1/1')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(raceentry=[]))
 
@@ -631,8 +739,12 @@ class RaceEntryListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
-                     circuit_name='Circuit 1', city='City 1', state='ST',
+        rt1 = RaceTrack(site='Site 1', circuit_name='Circuit 1',
+                        city='City 1', state='ST', country='USA')
+        db.session.add(rt1)
+        db.session.commit()
+
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, race_track_id=rt1.id,
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
         db.session.add(race1)
@@ -660,11 +772,11 @@ class RaceEntryListTests(BaseTest):
         db.session.add_all([rep1, rep2])
         db.session.commit()
 
-        response = self.client.get('/api/s1/2013/raceentry/type2/1')
+        response = self.client.get('/api/v1.0/s1/2013/raceentry/type2/1')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(raceentry=[]))
 
-        response = self.client.get('/api/s1/2013/raceentry/type1/1')
+        response = self.client.get('/api/v1.0/s1/2013/raceentry/type1/1')
         expect = {u'raceentry': [{u'race': {u'id': u'race1', u'name': race1.name},
                                   u'team': {u'id': t1.id, u'name': t1.name,
                                             u'owner': {u'id': 'p2', u'name': 'owner', u'country': 'USA'}},
@@ -678,12 +790,24 @@ class RaceEntryListTests(BaseTest):
 
 class RaceResultListTests(BaseTest):
 
+    def test_no_version(self):
+        '''
+        should return no race results with missing or bad version
+        '''
+
+        response = self.client.get('/api/s1/2013/raceresults/1')
+        self.assertEqual(response._status_code, 404)
+
+        response = self.client.get('/api/v0.0/s1/2013/raceresults/1')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(raceresults=[]))
+
     def test_no_race_results(self):
         '''
         should return no race results
         '''
 
-        response = self.client.get('/api/s1/2013/raceresults/1')
+        response = self.client.get('/api/v1.0/s1/2013/raceresults/1')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(raceresults=[]))
 
@@ -694,8 +818,12 @@ class RaceResultListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
-                     circuit_name='Circuit 1', city='City 1', state='ST',
+        rt1 = RaceTrack(site='Site 1', circuit_name='Circuit 1',
+                        city='City 1', state='ST', country='USA')
+        db.session.add(rt1)
+        db.session.commit()
+
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, race_track_id=rt1.id,
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
         db.session.add(race1)
@@ -724,11 +852,11 @@ class RaceResultListTests(BaseTest):
         db.session.add_all([rrp1, rrp2])
         db.session.commit()
 
-        response = self.client.get('/api/s1/2013/raceresults/2')
+        response = self.client.get('/api/v1.0/s1/2013/raceresults/2')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(raceresults=[]))
 
-        response = self.client.get('/api/s1/2013/raceresults/1')
+        response = self.client.get('/api/v1.0/s1/2013/raceresults/1')
         print response.json
         expect = {u'raceresults': [{u'race': {u'id': u'race1', u'name': race1.name},
                                     u'team': {u'id': t1.id, u'name': t1.name,
@@ -746,12 +874,24 @@ class RaceResultListTests(BaseTest):
 
 class QualifyingResultListTests(BaseTest):
 
+    def test_no_version(self):
+        '''
+        should return no qualifying results with missing or bad version
+        '''
+
+        response = self.client.get('/api/s1/2013/qualifyingresults/1')
+        self.assertEqual(response._status_code, 404)
+
+        response = self.client.get('/api/v0.0/s1/2013/qualifyingresults/1')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(qualifyingresults=[]))
+
     def test_no_qualifying_results(self):
         '''
         should return no qualifying results
         '''
 
-        response = self.client.get('/api/s1/2013/qualifyingresults/1')
+        response = self.client.get('/api/v1.0/s1/2013/qualifyingresults/1')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(qualifyingresults=[]))
 
@@ -762,8 +902,12 @@ class QualifyingResultListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
-                     circuit_name='Circuit 1', city='City 1', state='ST',
+        rt1 = RaceTrack(site='Site 1', circuit_name='Circuit 1',
+                        city='City 1', state='ST', country='USA')
+        db.session.add(rt1)
+        db.session.commit()
+
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, race_track_id=rt1.id,
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
         db.session.add(race1)
@@ -796,11 +940,11 @@ class QualifyingResultListTests(BaseTest):
         db.session.add_all([qrp1, qrp2, qrp3, qrp4])
         db.session.commit()
 
-        response = self.client.get('/api/s1/2013/qualifyingresults/2')
+        response = self.client.get('/api/v1.0/s1/2013/qualifyingresults/2')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(qualifyingresults=[]))
 
-        response = self.client.get('/api/s1/2013/qualifyingresults/1')
+        response = self.client.get('/api/v1.0/s1/2013/qualifyingresults/1')
         print response.json
         expect = {u'qualifyingresults': [{u'race': {u'id': u'race1', u'name': race1.name},
                                           u'team': {u'id': t1.id, u'name': t1.name,
@@ -821,7 +965,7 @@ class QualifyingResultListTests(BaseTest):
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
-        response = self.client.get('/api/s1/2013/qualifyingresults/1/2')
+        response = self.client.get('/api/v1.0/s1/2013/qualifyingresults/1/2')
         expect = {u'qualifyingresults': [{u'race': {u'id': u'race1', u'name': race1.name},
                                           u'team': {u'id': t1.id, u'name': t1.name,
                                                     u'owner': {u'id': 'p2', u'name': 'owner', u'country': 'USA'}},
@@ -836,12 +980,24 @@ class QualifyingResultListTests(BaseTest):
 
 class PracticeResultListTests(BaseTest):
 
+    def test_no_version(self):
+        '''
+        should return no practice results with missing or bad version
+        '''
+
+        response = self.client.get('/api/s1/2013/practiceresults/1')
+        self.assertEqual(response._status_code, 404)
+
+        response = self.client.get('/api/v0.0/s1/2013/practiceresults/1')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(practiceresults=[]))
+
     def test_no_practice_results(self):
         '''
         should return no practice results
         '''
 
-        response = self.client.get('/api/s1/2013/practiceresults/1')
+        response = self.client.get('/api/v1.0/s1/2013/practiceresults/1')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(practiceresults=[]))
 
@@ -852,8 +1008,12 @@ class PracticeResultListTests(BaseTest):
         db.session.add(s1)
         db.session.commit()
 
-        race1 = Race(id='race1', round=1, name='Race 1', season=2013, site='Site 1',
-                     circuit_name='Circuit 1', city='City 1', state='ST',
+        rt1 = RaceTrack(site='Site 1', circuit_name='Circuit 1',
+                        city='City 1', state='ST', country='USA')
+        db.session.add(rt1)
+        db.session.commit()
+
+        race1 = Race(id='race1', round=1, name='Race 1', season=2013, race_track_id=rt1.id,
                      date=datetime.datetime.now(), laps=350, length=1.5, distance=525,
                      series=s1.id)
         db.session.add(race1)
@@ -886,11 +1046,11 @@ class PracticeResultListTests(BaseTest):
         db.session.add_all([prp1, prp2, prp3, prp4])
         db.session.commit()
 
-        response = self.client.get('/api/s1/2013/practiceresults/2')
+        response = self.client.get('/api/v1.0/s1/2013/practiceresults/2')
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, dict(practiceresults=[]))
 
-        response = self.client.get('/api/s1/2013/practiceresults/1')
+        response = self.client.get('/api/v1.0/s1/2013/practiceresults/1')
         expect = {u'practiceresults': [{u'race': {u'id': u'race1', u'name': race1.name},
                                         u'team': {u'id': t1.id, u'name': t1.name,
                                                   u'owner': {u'id': 'p2', u'name': 'owner', u'country': 'USA'}},
@@ -910,7 +1070,7 @@ class PracticeResultListTests(BaseTest):
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
-        response = self.client.get('/api/s1/2013/practiceresults/1/2')
+        response = self.client.get('/api/v1.0/s1/2013/practiceresults/1/2')
         expect = {u'practiceresults': [{u'race': {u'id': u'race1', u'name': race1.name},
                                         u'team': {u'id': t1.id, u'name': t1.name,
                                                   u'owner': {u'id': 'p2', u'name': 'owner', u'country': 'USA'}},

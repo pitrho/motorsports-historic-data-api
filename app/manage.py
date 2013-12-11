@@ -24,55 +24,55 @@ def create_app(env_config):
 
     #add api routes
     api.add_resource(DriverList,
-                     '/api/drivers',
-                     '/api/<string:series>/drivers',
-                     '/api/<string:series>/<string:season>/drivers',
+                     '/api/<string:version>/drivers',
+                     '/api/<string:version>/<string:series>/drivers',
+                     '/api/<string:version>/<string:series>/<string:season>/drivers',
                      endpoint='drivers')
 
     api.add_resource(TeamList,
-                     '/api/teams',
-                     '/api/<string:series>/teams',
-                     '/api/<string:series>/<string:season>/teams',
+                     '/api/<string:version>/teams',
+                     '/api/<string:version>/<string:series>/teams',
+                     '/api/<string:version>/<string:series>/<string:season>/teams',
                      endpoint='teams')
 
     api.add_resource(CarList,
-                     '/api/cars',
-                     '/api/<string:series>/cars',
-                     '/api/<string:series>/<string:season>/cars',
+                     '/api/<string:version>/cars',
+                     '/api/<string:version>/<string:series>/cars',
+                     '/api/<string:version>/<string:series>/<string:season>/cars',
                      endpoint='cars')
 
     api.add_resource(DriverStandingsList,
-                     '/api/<string:series>/<string:season>/driverstandings',
+                     '/api/<string:version>/<string:series>/<string:season>/driverstandings',
                      endpoint='driverstandings')
 
     api.add_resource(TeamStandingsList,
-                     '/api/<string:series>/<string:season>/teamstandings',
+                     '/api/<string:version>/<string:series>/<string:season>/teamstandings',
                      endpoint='teamstandings')
 
     api.add_resource(RaceList,
-                     '/api/<string:series>/<string:season>/races',
+                     '/api/<string:version>/<string:series>/<string:season>/races',
                      endpoint='races')
 
     api.add_resource(RaceStandingList,
-                     '/api/racestandings/<string:race_id>',
+                     '/api/<string:version>/racestandings/<string:race_id>',
                      endpoint='racestandings')
 
     api.add_resource(RaceEntryList,
-                     '/api/<string:series>/<string:season>/raceentry/<string:entry_type>/<string:round>',
+                     '/api/<string:version>/<string:series>/<string:season>/raceentry/<string:entry_type>/<string:round>',
                      endpoint='raceentry')
 
     api.add_resource(RaceResultList,
-                     '/api/<string:series>/<string:season>/raceresults/<string:round>',
+                     '/api/<string:version>/<string:series>/<string:season>/raceresults/<string:round>',
                      endpoint='raceresults')
 
     api.add_resource(QualifyingResultList,
-                     '/api/<string:series>/<string:season>/qualifyingresults/<string:round>',
-                     '/api/<string:series>/<string:season>/qualifyingresults/<string:round>/<string:session>',
+                     '/api/<string:version>/<string:series>/<string:season>/qualifyingresults/<string:round>',
+                     '/api/<string:version>/<string:series>/<string:season>/qualifyingresults/<string:round>/<string:session>',
                      endpoint='qualifyingresults')
 
     api.add_resource(PracticeResultList,
-                     '/api/<string:series>/<string:season>/practiceresults/<string:round>',
-                     '/api/<string:series>/<string:season>/practiceresults/<string:round>/<string:session>',
+                     '/api/<string:version>/<string:series>/<string:season>/practiceresults/<string:round>',
+                     '/api/<string:version>/<string:series>/<string:season>/practiceresults/<string:round>/<string:session>',
                      endpoint='practiceresults')
 
     return app
