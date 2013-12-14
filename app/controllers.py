@@ -1,6 +1,6 @@
 from flask import request
 from flask.ext.restful import Resource, fields, marshal
-from models import Team, Car, DriverStanding, Race, \
+from models import Team, Vehicle, DriverStanding, Race, \
     TeamStanding, RaceStanding, RaceEntry, RaceEntryType, RaceResult, \
     QualifyingResult, PracticeResult, RaceResultPerson, PersonType
 
@@ -112,7 +112,7 @@ class TeamList(Resource):
         return {'teams': []}
 
 
-class CarList(Resource):
+class VehicleList(Resource):
 
     owner_fields = {
         'id': fields.String,
@@ -120,38 +120,38 @@ class CarList(Resource):
         'country': fields.String
     }
 
-    car_fields = {
+    vehicle_fields = {
         'id': fields.String,
-        'number': fields.String,
-        'car_type': fields.String,
-        'owner': fields.Nested(owner_fields)
+        'number': fields.Integer,
+        'owner': fields.Nested(owner_fields),
+        'vehicle_metadata': fields.Raw
     }
 
     def get(self, version, series=None, season=None):
         '''
         Handles routes
-        /api/cars                 All cars
-        /api/series/cars          Cars from a series
-        /api/series/season/cars   Cars from a series and season
+        /api/version/vehicles               All cars
+        /api/version/series/vehicles        Vehicles from a series
+        /api/version/series/season/vehicles Vehicles from a series and season
         '''
 
         if version == 'v1.0':
 
-            # /api/cars
-            cars = Car.query
+            #/api/version/vehicles
+            vehicles = Vehicle.query
 
-            # /api/series/crewchiefs
+            # /api/version/series/vehicles
             if series:
-                cars = cars.join(Car.races).\
+                vehicles = vehicles.join(Vehicle.races).\
                     filter(Race.series == series)
 
-            # /api/series/season/crewchiefs
+            # /api/version/series/season/vehicles
             if season:
-                cars = cars.filter(Race.season == season)
+                vehicles = vehicles.filter(Race.season == season)
 
-            return {'cars': marshal(cars.all(), self.car_fields)}
+            return {'vehicles': marshal(vehicles.all(), self.vehicle_fields)}
 
-        return {'cars': []}
+        return {'vehicles': []}
 
 
 class DriverStandingsList(Resource):

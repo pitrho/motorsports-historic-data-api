@@ -3,7 +3,7 @@ import psycopg2
 import datetime
 from flask.ext.testing import TestCase
 from app.manage import create_and_config_app, db
-from app.models import Series, Team, Car, DriverStanding, RaceTrack,\
+from app.models import Series, Team, Vehicle, DriverStanding, RaceTrack,\
     TeamStanding, Race, RaceResult, RaceStanding, RaceEntry, RaceEntryType, \
     QualifyingResult, PracticeResult, Person, RaceResultPerson,\
     QualifyingResultPerson, PracticeResultPerson, RaceEntryPerson
@@ -146,14 +146,14 @@ class DriverListTests(BaseTest):
         db.session.commit()
 
         t1 = Team(id='t1', name='Team 1', alias='team1', owner_id=p5.id)
-        car1 = Car(number='1', car_type='Ford', owner_id=p1.id)
-        db.session.add_all([t1, car1])
+        v1 = Vehicle(number=1, owner_id=p1.id, vehicle_metadata={'make': 'Ford'})
+        db.session.add_all([t1, v1])
         db.session.commit()
 
-        rr1 = RaceResult(race_id=race1.id, team_id=t1.id, car_id=car1.id,
+        rr1 = RaceResult(race_id=race1.id, team_id=t1.id, vehicle_id=v1.id,
                          sponsor='sponsor 1', grid=2, position=1, laps=350,
                          status='Finished', laps_led=200, points=0, money=0)
-        rr2 = RaceResult(race_id=race2.id, team_id=t1.id, car_id=car1.id,
+        rr2 = RaceResult(race_id=race2.id, team_id=t1.id, vehicle_id=v1.id,
                          sponsor='sponsor 2', grid=1, position=2, laps=350,
                          status='Finished', laps_led=150, points=0, money=0)
         db.session.add_all([rr1, rr2])
@@ -319,47 +319,49 @@ class TeamListTests(BaseTest):
         self.assertEquals(response.json, expect)
 
 
-class CarListTests(BaseTest):
+class VehicleListTests(BaseTest):
 
     def test_no_version(self):
-        '''should return no cars with missing or bad version'''
+        '''should return no vehicles with missing or bad version'''
 
-        response = self.client.get('/api/cars')
+        response = self.client.get('/api/vehicles')
         self.assertEqual(response._status_code, 404)
 
-        response = self.client.get('/api/v0.0/cars')
+        response = self.client.get('/api/v0.0/vehicles')
         self.assertEqual(response._status_code, 200)
-        self.assertEquals(response.json, dict(cars=[]))
+        self.assertEquals(response.json, dict(vehicles=[]))
 
-    def test_no_cars(self):
-        '''should return no cars'''
+    def test_no_vehicles(self):
+        '''should return no vehicles'''
 
-        response = self.client.get('/api/v1.0/cars')
+        response = self.client.get('/api/v1.0/vehicles')
         self.assertEqual(response._status_code, 200)
-        self.assertEquals(response.json, dict(cars=[]))
+        self.assertEquals(response.json, dict(vehicles=[]))
 
-    def test_all_cars(self):
-        '''should return all cars'''
+    def test_all_vehicles(self):
+        '''should return all vehicles'''
 
         p1 = Person(id='p1', name='owner 1', country='USA')
         p2 = Person(id='p2', name='owner 2', country='USA')
         db.session.add_all([p1, p2])
         db.session.commit()
 
-        car1 = Car(number='1', car_type='Ford', owner_id=p1.id)
-        car2 = Car(number='2', car_type='Chevy', owner_id=p2.id)
-        db.session.add_all([car1, car2])
+        v1 = Vehicle(number=1, owner_id=p1.id, vehicle_metadata={'make': 'Ford'})
+        v2 = Vehicle(number=2, owner_id=p2.id, vehicle_metadata={'make': 'Chevy'})
+        db.session.add_all([v1, v2])
         db.session.commit()
 
-        response = self.client.get('/api/v1.0/cars')
-        expect = {u'cars': [{u'id': u'1', u'number': '1', u'car_type': u'Ford',
-                             u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'}},
-                            {u'id': u'2', u'number': '2', u'car_type': u'Chevy',
-                             u'owner': {u'id': 'p2', u'name': 'owner 2', u'country': 'USA'}}]}
+        response = self.client.get('/api/v1.0/vehicles')
+        expect = {u'vehicles': [{u'id': u'1', u'number': 1,
+                                 u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'},
+                                 u'vehicle_metadata': {u'make': u'Ford'}},
+                                {u'id': u'2', u'number': 2,
+                                 u'owner': {u'id': 'p2', u'name': 'owner 2', u'country': 'USA'},
+                                 u'vehicle_metadata': {u'make': u'Chevy'}}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
-    def test_cars_by_series(self):
+    def test_vehicles_by_series(self):
         '''should return all cars on a given series'''
 
         s1 = Series(id='s1', description='series 1')
@@ -382,9 +384,9 @@ class CarListTests(BaseTest):
         db.session.add_all([p1, p2])
         db.session.commit()
 
-        car1 = Car(number='1', car_type='Ford', owner_id=p1.id)
-        car2 = Car(number='2', car_type='Chevy', owner_id=p2.id)
-        db.session.add_all([car1, car2])
+        v1 = Vehicle(number=1, owner_id=p1.id, vehicle_metadata={'make': 'Ford'})
+        v2 = Vehicle(number=2, owner_id=p2.id, vehicle_metadata={'make': 'Chevy'})
+        db.session.add_all([v1, v2])
         db.session.commit()
 
         t1 = Team(id='t1', name='Team 1', alias='team1', owner_id=p2.id)
@@ -392,19 +394,20 @@ class CarListTests(BaseTest):
         db.session.commit()
 
         rr1 = RaceResult(race_id=race1.id, team_id=t1.id,
-                         car_id=car1.id, sponsor='sponsor',
+                         vehicle_id=v1.id, sponsor='sponsor',
                          grid=2, position=1, laps=350, status='Finished',
                          laps_led=200, points=0, money=0)
         db.session.add(rr1)
         db.session.commit()
 
-        response = self.client.get('/api/v1.0/s1/cars')
-        expect = {u'cars': [{u'id': u'1', u'number': '1', u'car_type': u'Ford',
-                             u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'}}]}
+        response = self.client.get('/api/v1.0/s1/vehicles')
+        expect = {u'vehicles': [{u'id': u'1', u'number': 1,
+                                 u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'},
+                                 u'vehicle_metadata': {u'make': u'Ford'}}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
-    def test_cars_by_series_and_season(self):
+    def test_vehicles_by_series_and_season(self):
         '''should return all cars on a given series and season'''
 
         s1 = Series(id='s1', description='series 1')
@@ -427,9 +430,9 @@ class CarListTests(BaseTest):
         db.session.add_all([p1, p2])
         db.session.commit()
 
-        car1 = Car(number='1', car_type='Ford', owner_id=p1.id)
-        car2 = Car(number='2', car_type='Chevy', owner_id=p2.id)
-        db.session.add_all([car1, car2])
+        v1 = Vehicle(number=1, owner_id=p1.id, vehicle_metadata={'make': 'Ford'})
+        v2 = Vehicle(number=2, owner_id=p2.id, vehicle_metadata={'make': 'Chevy'})
+        db.session.add_all([v1, v2])
         db.session.commit()
 
         t1 = Team(id='t1', name='Team 1', alias='team1', owner_id=p2.id)
@@ -437,19 +440,20 @@ class CarListTests(BaseTest):
         db.session.commit()
 
         rr1 = RaceResult(race_id=race1.id, team_id=t1.id,
-                         car_id=car1.id, sponsor='sponsor',
+                         vehicle_id=v1.id, sponsor='sponsor',
                          grid=2, position=1, laps=350, status='Finished',
                          laps_led=200, points=0, money=0)
         db.session.add(rr1)
         db.session.commit()
 
-        response = self.client.get('/api/v1.0/s1/2012/cars')
+        response = self.client.get('/api/v1.0/s1/2012/vehicles')
         self.assertEqual(response._status_code, 200)
-        self.assertEquals(response.json, dict(cars=[]))
+        self.assertEquals(response.json, dict(vehicles=[]))
 
-        response = self.client.get('/api/v1.0/s1/2013/cars')
-        expect = {u'cars': [{u'id': u'1', u'number': '1', u'car_type': u'Ford',
-                             u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'}}]}
+        response = self.client.get('/api/v1.0/s1/2013/vehicles')
+        expect = {u'vehicles': [{u'id': u'1', u'number': 1,
+                                 u'owner': {u'id': 'p1', u'name': 'owner 1', u'country': 'USA'},
+                                 u'vehicle_metadata': {u'make': u'Ford'}}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 
