@@ -11,7 +11,7 @@ class Person(db.Model):
 
     __tablename__ = 'people'
 
-    id = db.Column(db.String(50), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
     country = db.Column(db.String(50), nullable=False)
 
