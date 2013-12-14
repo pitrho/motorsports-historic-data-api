@@ -39,7 +39,7 @@ class PeopleList(Resource):
 class DriverList(Resource):
 
     driver_fields = {
-        'id': fields.String(attribute='person.id'),
+        'id': fields.Integer(attribute='person.id'),
         'name': fields.String(attribute='person.name'),
         'country': fields.String(attribute='person.country')
     }
@@ -73,7 +73,7 @@ class DriverList(Resource):
 class TeamList(Resource):
 
     owner_fields = {
-        'id': fields.String,
+        'id': fields.Integer,
         'name': fields.String,
         'country': fields.String
     }
@@ -115,7 +115,7 @@ class TeamList(Resource):
 class CarList(Resource):
 
     owner_fields = {
-        'id': fields.String,
+        'id': fields.Integer,
         'name': fields.String,
         'country': fields.String
     }
@@ -156,14 +156,8 @@ class CarList(Resource):
 
 class DriverStandingsList(Resource):
 
-    driver_fields = {
-        'id': fields.String,
-        'name': fields.String,
-        'country': fields.String
-    }
-
-    owner_fields = {
-        'id': fields.String,
+    person_fields = {
+        'id': fields.Integer,
         'name': fields.String,
         'country': fields.String
     }
@@ -172,12 +166,12 @@ class DriverStandingsList(Resource):
         'id': fields.String,
         'number': fields.String,
         'car_type': fields.String,
-        'owner': fields.Nested(owner_fields)
+        'owner': fields.Nested(person_fields)
     }
 
     driver_standings_fields = {
         'id': fields.Integer,
-        'driver': fields.Nested(driver_fields),
+        'driver': fields.Nested(person_fields),
         'car': fields.Nested(car_fields),
         'series': fields.String,
         'season': fields.Integer,
@@ -211,8 +205,8 @@ class DriverStandingsList(Resource):
 
 class TeamStandingsList(Resource):
 
-    owner_fields = {
-        'id': fields.String,
+    person_fields = {
+        'id': fields.Integer,
         'name': fields.String,
         'country': fields.String
     }
@@ -221,14 +215,14 @@ class TeamStandingsList(Resource):
         'id': fields.String,
         'name': fields.String,
         'alias': fields.String,
-        'owner': fields.Nested(owner_fields)
+        'owner': fields.Nested(person_fields)
     }
 
     car_fields = {
         'id': fields.String,
         'number': fields.String,
         'car_type': fields.String,
-        'owner': fields.Nested(owner_fields)
+        'owner': fields.Nested(person_fields)
     }
 
     team_standings_fields = {
@@ -340,7 +334,7 @@ class RaceEntryList(Resource):
     }
 
     person_fields = {
-        'id': fields.String,
+        'id': fields.Integer,
         'name': fields.String,
         'country': fields.String
     }
@@ -404,7 +398,7 @@ class RaceResultList(Resource):
     }
 
     person_fields = {
-        'id': fields.String,
+        'id': fields.Integer,
         'name': fields.String,
         'country': fields.String
     }
@@ -473,7 +467,7 @@ class QualifyingResultList(Resource):
     }
 
     person_fields = {
-        'id': fields.String,
+        'id': fields.Integer,
         'name': fields.String,
         'country': fields.String
     }
@@ -542,7 +536,7 @@ class PracticeResultList(Resource):
     }
 
     person_fields = {
-        'id': fields.String,
+        'id': fields.Integer,
         'name': fields.String,
         'country': fields.String
     }
