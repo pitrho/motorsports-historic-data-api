@@ -187,7 +187,7 @@ class DriverListTests(BaseTest):
 class TeamListTests(BaseTest):
 
     def test_no_version(self):
-        '''shouldr return no drivers with missing or bad version'''
+        '''should return no drivers with missing or bad version'''
 
         response = self.client.get('/api/teams')
         self.assertEqual(response._status_code, 404)
@@ -252,12 +252,12 @@ class TeamListTests(BaseTest):
         db.session.add_all([t1, t2])
         db.session.commit()
 
-        car1 = Car(number='1', car_type='Ford')
-        db.session.add(car1)
+        v1 = Vehicle(number=1, owner_id=p1.id, vehicle_metadata={'make': 'Ford'})
+        db.session.add(v1)
         db.session.commit()
 
         rr1 = RaceResult(race_id=race1.id, team_id=t1.id,
-                         car_id=car1.id, sponsor='sponsor',
+                         vehicle_id=v1.id, sponsor='sponsor',
                          grid=2, position=1, laps=350, status='Finished',
                          laps_led=200, points=0, money=0)
         db.session.add(rr1)
@@ -297,12 +297,12 @@ class TeamListTests(BaseTest):
         db.session.add_all([t1, t2])
         db.session.commit()
 
-        car1 = Car(number='1', car_type='Ford')
-        db.session.add(car1)
+        v1 = Vehicle(number=1, owner_id=p1.id, vehicle_metadata={'make': 'Ford'})
+        db.session.add(v1)
         db.session.commit()
 
         rr1 = RaceResult(race_id=race1.id, team_id=t1.id,
-                         car_id=car1.id, sponsor='sponsor',
+                         vehicle_id=v1.id, sponsor='sponsor',
                          grid=2, position=1, laps=350, status='Finished',
                          laps_led=200, points=0, money=0)
         db.session.add(rr1)
@@ -352,10 +352,10 @@ class VehicleListTests(BaseTest):
         db.session.commit()
 
         response = self.client.get('/api/v1.0/vehicles')
-        expect = {u'vehicles': [{u'id': u'1', u'number': 1,
+        expect = {u'vehicles': [{u'id': v1.id, u'number': 1,
                                  u'owner': {u'id': p1.id, u'name': 'owner 1', u'country': 'USA'},
                                  u'vehicle_metadata': {u'make': u'Ford'}},
-                                {u'id': u'2', u'number': 2,
+                                {u'id': v2.id, u'number': 2,
                                  u'owner': {u'id': p2.id, u'name': 'owner 2', u'country': 'USA'},
                                  u'vehicle_metadata': {u'make': u'Chevy'}}]}
 
@@ -363,7 +363,7 @@ class VehicleListTests(BaseTest):
         self.assertEquals(response.json, expect)
 
     def test_vehicles_by_series(self):
-        '''should return all cars on a given series'''
+        '''should return all vehicless on a given series'''
 
         s1 = Series(id='s1', description='series 1')
         db.session.add(s1)
@@ -402,7 +402,7 @@ class VehicleListTests(BaseTest):
         db.session.commit()
 
         response = self.client.get('/api/v1.0/s1/vehicles')
-        expect = {u'vehicles': [{u'id': u'1', u'number': 1,
+        expect = {u'vehicles': [{u'id': v1.id, u'number': 1,
                                  u'owner': {u'id': p1.id, u'name': 'owner 1', u'country': 'USA'},
                                  u'vehicle_metadata': {u'make': u'Ford'}}]}
 
@@ -410,7 +410,7 @@ class VehicleListTests(BaseTest):
         self.assertEquals(response.json, expect)
 
     def test_vehicles_by_series_and_season(self):
-        '''should return all cars on a given series and season'''
+        '''should return all vehicles on a given series and season'''
 
         s1 = Series(id='s1', description='series 1')
         db.session.add(s1)
@@ -453,7 +453,7 @@ class VehicleListTests(BaseTest):
         self.assertEquals(response.json, dict(vehicles=[]))
 
         response = self.client.get('/api/v1.0/s1/2013/vehicles')
-        expect = {u'vehicles': [{u'id': u'1', u'number': 1,
+        expect = {u'vehicles': [{u'id': v1.id, u'number': 1,
                                  u'owner': {u'id': p1.id, u'name': 'owner 1', u'country': 'USA'},
                                  u'vehicle_metadata': {u'make': u'Ford'}}]}
 
@@ -489,20 +489,20 @@ class DriverStandingsListTests(BaseTest):
 
         p1 = Person(name='driver 1', country='USA')
         p2 = Person(name='driver 2', country='USA')
-        p3 = Person(name='car owner 1', country='USA')
-        p4 = Person(name='car owner 2', country='USA')
+        p3 = Person(name='vehicle owner 1', country='USA')
+        p4 = Person(name='vehicle owner 2', country='USA')
         db.session.add_all([p1, p2, p3, p4])
         db.session.commit()
 
-        car1 = Car(number='1', car_type='Ford', owner_id=p3.id)
-        car2 = Car(number='2', car_type='Chevy', owner_id=p4.id)
-        db.session.add_all([car1, car2])
+        v1 = Vehicle(number=1, owner_id=p3.id, vehicle_metadata={'make': 'Ford'})
+        v2 = Vehicle(number=1, owner_id=p4.id, vehicle_metadata={'make': 'Chevy'})
+        db.session.add_all([v1, v2])
         db.session.commit()
 
-        ds1 = DriverStanding(driver_id=p1.id, car_id=car1.id, series=s1.id,
+        ds1 = DriverStanding(driver_id=p1.id, vehicle_id=v1.id, series=s1.id,
                              season=2013, position=1, points=500, poles=5,
                              wins=5, starts=10, dnfs=0, top5=7, top10=10)
-        ds2 = DriverStanding(driver_id=p2.id, car_id=car2.id, series=s1.id,
+        ds2 = DriverStanding(driver_id=p2.id, vehicle_id=v2.id, series=s1.id,
                              season=2013, position=2, points=450, poles=3,
                              wins=3, starts=10, dnfs=1, top5=7, top10=8)
         db.session.add_all([ds1, ds2])
@@ -511,15 +511,17 @@ class DriverStandingsListTests(BaseTest):
         response = self.client.get('/api/v1.0/s1/2013/driverstandings')
         expect = {u'driverstandings': [{u'id': 1,
                                         u'driver': {u'id': p1.id, u'name': 'driver 1', u'country': 'USA'},
-                                        u'car': {u'id': u'1', u'number': '1', u'car_type': u'Ford',
-                                        u'owner': {u'id': p3.id, u'name': 'car owner 1', u'country': 'USA'}},
+                                        u'vehicle': {u'id': v1.id, u'number': 1,
+                                                     u'owner': {u'id': p3.id, u'name': 'vehicle owner 1', u'country': 'USA'},
+                                                     u'vehicle_metadata': {u'make': u'Ford'}},
                                         u'series': u's1', u'season': 2013, u'position': 1,
                                         u'points': 500, u'poles': 5, u'wins': 5,
                                         u'starts': 10, u'dnfs': 0, u'top5': 7, u'top10': 10},
                                        {u'id': 2,
                                         u'driver': {u'id': p2.id, u'name': 'driver 2', u'country': 'USA'},
-                                        u'car': {u'id': u'2', u'number': '2', u'car_type': u'Chevy',
-                                        u'owner': {u'id': p4.id, u'name': 'car owner 2', u'country': 'USA'}},
+                                        u'vehicle': {u'id': v2.id, u'number': 1,
+                                                     u'owner': {u'id': p4.id, u'name': 'vehicle owner 2', u'country': 'USA'},
+                                                     u'vehicle_metadata': {u'make': u'Chevy'}},
                                         u'series': u's1', u'season': 2013, u'position': 2,
                                         u'points': 450, u'poles': 3, u'wins': 3,
                                         u'starts': 10, u'dnfs': 1, u'top5': 7, u'top10': 8}]}
@@ -563,14 +565,14 @@ class TeamStandingsListTests(BaseTest):
         db.session.add_all([t1, t2])
         db.session.commit()
 
-        car1 = Car(number='1', car_type='Ford', owner_id=p1.id)
-        car2 = Car(number='2', car_type='Chevy', owner_id=p2.id)
-        db.session.add_all([car1, car2])
+        v1 = Vehicle(number=1, owner_id=p1.id, vehicle_metadata={'make': 'Ford'})
+        v2 = Vehicle(number=2, owner_id=p2.id, vehicle_metadata={'make': 'Chevy'})
+        db.session.add_all([v1, v2])
         db.session.commit()
 
-        ts1 = TeamStanding(team_id=t1.id, car_id=car1.id, series=s1.id,
+        ts1 = TeamStanding(team_id=t1.id, vehicle_id=v1.id, series=s1.id,
                            season=2013, position=1, points=500, poles=5)
-        ts2 = TeamStanding(team_id=t2.id, car_id=car2.id, series=s1.id,
+        ts2 = TeamStanding(team_id=t2.id, vehicle_id=v2.id, series=s1.id,
                            season=2013, position=2, points=450, poles=3)
         db.session.add_all([ts1, ts2])
         db.session.commit()
@@ -579,15 +581,17 @@ class TeamStandingsListTests(BaseTest):
         expect = {u'teamstandings': [{u'id': 1,
                                       u'team': {u'id': u't1', u'name': u'Team 1', u'alias': u'team1',
                                       u'owner': {u'id': p1.id, u'name': 'owner 1', u'country': 'USA'}},
-                                      u'car': {u'id': u'1', u'number': '1', u'car_type': u'Ford',
-                                      u'owner': {u'id': p1.id, u'name': 'owner 1', u'country': 'USA'}},
+                                      u'vehicle': {u'id': v1.id, u'number': 1,
+                                                   u'owner': {u'id': p1.id, u'name': 'owner 1', u'country': 'USA'},
+                                                   u'vehicle_metadata': {u'make': u'Ford'}},
                                       u'series': u's1', u'season': 2013, u'position': 1,
                                       u'points': 500, u'poles': 5},
                                      {u'id': 2,
                                       u'team': {u'id': u't2', u'name': u'Team 2', u'alias': u'team2',
                                       u'owner': {u'id': p2.id, u'name': 'owner 2', u'country': 'USA'}},
-                                      u'car': {u'id': u'2', u'number': '2', u'car_type': u'Chevy',
-                                      u'owner': {u'id': p2.id, u'name': 'owner 2', u'country': 'USA'}},
+                                      u'vehicle': {u'id': v2.id, u'number': 2,
+                                                   u'owner': {u'id': p2.id, u'name': 'owner 2', u'country': 'USA'},
+                                                   u'vehicle_metadata': {u'make': u'Chevy'}},
                                       u'series': u's1', u'season': 2013, u'position': 2,
                                       u'points': 450, u'poles': 3}]}
         self.assertEqual(response._status_code, 200)
@@ -678,8 +682,6 @@ class RaceStandingListTests(BaseTest):
     def test_races_standings_by_race(self):
         '''should return the race standings for a given race'''
 
-        self.maxDiff = None
-
         s1 = Series(id='s1', description='series 1')
         db.session.add(s1)
         db.session.commit()
@@ -765,12 +767,12 @@ class RaceEntryListTests(BaseTest):
 
         ret1 = RaceEntryType(entry_type='type1')
         t1 = Team(id='t1', name='Team 1', alias='team1', owner_id=p2.id)
-        car1 = Car(number='1', car_type='Ford', owner_id=p1.id)
-        db.session.add_all([ret1, t1, car1])
+        v1 = Vehicle(number=1, owner_id=p1.id, vehicle_metadata={'make': 'Ford'})
+        db.session.add_all([ret1, t1, v1])
         db.session.commit()
 
         re1 = RaceEntry(race_id=race1.id, team_id=t1.id,
-                        car_id=car1.id, entry_type_id=ret1.id)
+                        vehicle_id=v1.id, entry_type_id=ret1.id)
         db.session.add(re1)
         db.session.commit()
 
@@ -784,11 +786,13 @@ class RaceEntryListTests(BaseTest):
         self.assertEquals(response.json, dict(raceentry=[]))
 
         response = self.client.get('/api/v1.0/s1/2013/raceentry/type1/1')
+        print response.json
         expect = {u'raceentry': [{u'race': {u'id': u'race1', u'name': race1.name},
                                   u'team': {u'id': t1.id, u'name': t1.name,
                                             u'owner': {u'id': p2.id, u'name': 'owner', u'country': 'USA'}},
-                                  u'car': {u'number': car1.number, u'car_type': car1.car_type,
-                                           u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}},
+                                  u'vehicle': {u'id': v1.id, u'number': 1,
+                                               u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'},
+                                               u'vehicle_metadata': {u'make': u'Ford'}},
                                   u'crew-chief': {u'id': p3.id, u'name': 'crew chief', u'country': 'USA'},
                                   u'driver': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}}]}
         self.assertEqual(response._status_code, 200)
@@ -843,12 +847,12 @@ class RaceResultListTests(BaseTest):
         db.session.commit()
 
         t1 = Team(id='t1', name='Team 1', alias='team1', owner_id=p2.id)
-        car1 = Car(number='1', car_type='Ford', owner_id=p1.id)
-        db.session.add_all([t1, car1])
+        v1 = Vehicle(number=1, owner_id=p1.id, vehicle_metadata={'make': 'Ford'})
+        db.session.add_all([t1, v1])
         db.session.commit()
 
         rr1 = RaceResult(race_id=race1.id, team_id=t1.id,
-                         car_id=car1.id, sponsor='sponsor',
+                         vehicle_id=v1.id, sponsor='sponsor',
                          grid=2, position=1, laps=350, status='Finished',
                          laps_led=200, points=0, money=0)
         db.session.add(rr1)
@@ -864,12 +868,13 @@ class RaceResultListTests(BaseTest):
         self.assertEquals(response.json, dict(raceresults=[]))
 
         response = self.client.get('/api/v1.0/s1/2013/raceresults/1')
-        print response.json
+
         expect = {u'raceresults': [{u'race': {u'id': u'race1', u'name': race1.name},
                                     u'team': {u'id': t1.id, u'name': t1.name,
                                               u'owner': {u'id': p2.id, u'name': 'owner', u'country': 'USA'}},
-                                    u'car': {u'number': car1.number, u'car_type': car1.car_type,
-                                             u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}},
+                                    u'vehicle': {u'id': v1.id, u'number': 1,
+                                                 u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'},
+                                                 u'vehicle_metadata': {u'make': u'Ford'}},
                                     u'sponsor': 'sponsor', u'position': 1, u'laps': 350,
                                     u'status': 'Finished', u'laps_led': 200, u'points': 0,
                                     u'money': u'0.00',
@@ -927,15 +932,15 @@ class QualifyingResultListTests(BaseTest):
         db.session.commit()
 
         t1 = Team(id='t1', name='Team 1', alias='team1', owner_id=p2.id)
-        car1 = Car(number='1', car_type='Ford', owner_id=p1.id)
-        db.session.add_all([t1, car1])
+        v1 = Vehicle(number=1, owner_id=p1.id, vehicle_metadata={'make': 'Ford'})
+        db.session.add_all([t1, v1])
         db.session.commit()
 
         qr1 = QualifyingResult(race_id=race1.id, team_id=t1.id,
-                               car_id=car1.id, session=1,
+                               vehicle_id=v1.id, session=1,
                                position=1, lap_time=35.25)
         qr2 = QualifyingResult(race_id=race1.id, team_id=t1.id,
-                               car_id=car1.id, session=2,
+                               vehicle_id=v1.id, session=2,
                                position=1, lap_time=34.25)
         db.session.add_all([qr1, qr2])
         db.session.commit()
@@ -956,16 +961,18 @@ class QualifyingResultListTests(BaseTest):
         expect = {u'qualifyingresults': [{u'race': {u'id': u'race1', u'name': race1.name},
                                           u'team': {u'id': t1.id, u'name': t1.name,
                                                     u'owner': {u'id': p2.id, u'name': 'owner', u'country': 'USA'}},
-                                          u'car': {u'number': car1.number, u'car_type': car1.car_type,
-                                                   u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}},
+                                          u'vehicle': {u'id': v1.id, u'number': 1,
+                                                       u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'},
+                                                       u'vehicle_metadata': {u'make': u'Ford'}},
                                           u'session': 1, u'position': 1, u'lap_time': u'35.250',
                                           u'crew-chief': {u'id': p3.id, u'name': 'crew chief', u'country': 'USA'},
                                           u'driver': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}},
                                          {u'race': {u'id': u'race1', u'name': race1.name},
                                           u'team': {u'id': t1.id, u'name': t1.name,
                                                     u'owner': {u'id': p2.id, u'name': 'owner', u'country': 'USA'}},
-                                          u'car': {u'number': car1.number, u'car_type': car1.car_type,
-                                                   u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}},
+                                          u'vehicle': {u'id': v1.id, u'number': 1,
+                                                       u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'},
+                                                       u'vehicle_metadata': {u'make': u'Ford'}},
                                           u'session': 2, u'position': 1, u'lap_time': u'34.250',
                                           u'crew-chief': {u'id': p3.id, u'name': 'crew chief', u'country': 'USA'},
                                           u'driver': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}}]}
@@ -976,8 +983,9 @@ class QualifyingResultListTests(BaseTest):
         expect = {u'qualifyingresults': [{u'race': {u'id': u'race1', u'name': race1.name},
                                           u'team': {u'id': t1.id, u'name': t1.name,
                                                     u'owner': {u'id': p2.id, u'name': 'owner', u'country': 'USA'}},
-                                          u'car': {u'number': car1.number, u'car_type': car1.car_type,
-                                                   u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}},
+                                          u'vehicle': {u'id': v1.id, u'number': 1,
+                                                       u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'},
+                                                       u'vehicle_metadata': {u'make': u'Ford'}},
                                           u'session': 2, u'position': 1, u'lap_time': u'34.250',
                                           u'crew-chief': {u'id': p3.id, u'name': 'crew chief', u'country': 'USA'},
                                           u'driver': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}}]}
@@ -1033,15 +1041,15 @@ class PracticeResultListTests(BaseTest):
         db.session.commit()
 
         t1 = Team(id='t1', name='Team 1', alias='team1', owner_id=p2.id)
-        car1 = Car(number='1', car_type='Ford', owner_id=p1.id)
-        db.session.add_all([t1, car1])
+        v1 = Vehicle(number=1, owner_id=p1.id, vehicle_metadata={'make': 'Ford'})
+        db.session.add_all([t1, v1])
         db.session.commit()
 
         pr1 = PracticeResult(race_id=race1.id, team_id=t1.id,
-                             car_id=car1.id, session=1,
+                             vehicle_id=v1.id, session=1,
                              position=1, lap_time=35.25)
         pr2 = PracticeResult(race_id=race1.id, team_id=t1.id,
-                             car_id=car1.id, session=2,
+                             vehicle_id=v1.id, session=2,
                              position=1, lap_time=34.37)
         db.session.add_all([pr1, pr2])
         db.session.commit()
@@ -1061,16 +1069,18 @@ class PracticeResultListTests(BaseTest):
         expect = {u'practiceresults': [{u'race': {u'id': u'race1', u'name': race1.name},
                                         u'team': {u'id': t1.id, u'name': t1.name,
                                                   u'owner': {u'id': p2.id, u'name': 'owner', u'country': 'USA'}},
-                                        u'car': {u'number': car1.number, u'car_type': car1.car_type,
-                                                 u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}},
+                                        u'vehicle': {u'id': v1.id, u'number': 1,
+                                                     u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'},
+                                                     u'vehicle_metadata': {u'make': u'Ford'}},
                                         u'session': 1, u'position': 1, u'lap_time': u'35.250',
                                         u'crew-chief': {u'id': p3.id, u'name': 'crew chief', u'country': 'USA'},
                                         u'driver': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}},
                                        {u'race': {u'id': u'race1', u'name': race1.name},
                                         u'team': {u'id': t1.id, u'name': t1.name,
                                                   u'owner': {u'id': p2.id, u'name': 'owner', u'country': 'USA'}},
-                                        u'car': {u'number': car1.number, u'car_type': car1.car_type,
-                                                 u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}},
+                                        u'vehicle': {u'id': v1.id, u'number': 1,
+                                                     u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'},
+                                                     u'vehicle_metadata': {u'make': u'Ford'}},
                                         u'session': 2, u'position': 1, u'lap_time': u'34.370',
                                         u'crew-chief': {u'id': p3.id, u'name': 'crew chief', u'country': 'USA'},
                                         u'driver': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}}]}
@@ -1081,8 +1091,9 @@ class PracticeResultListTests(BaseTest):
         expect = {u'practiceresults': [{u'race': {u'id': u'race1', u'name': race1.name},
                                         u'team': {u'id': t1.id, u'name': t1.name,
                                                   u'owner': {u'id': p2.id, u'name': 'owner', u'country': 'USA'}},
-                                        u'car': {u'number': car1.number, u'car_type': car1.car_type,
-                                                 u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}},
+                                        u'vehicle': {u'id': v1.id, u'number': 1,
+                                                     u'owner': {u'id': p1.id, u'name': 'driver', u'country': 'USA'},
+                                                     u'vehicle_metadata': {u'make': u'Ford'}},
                                         u'session': 2, u'position': 1, u'lap_time': u'34.370',
                                         u'crew-chief': {u'id': p3.id, u'name': 'crew chief', u'country': 'USA'},
                                         u'driver': {u'id': p1.id, u'name': 'driver', u'country': 'USA'}}]}
