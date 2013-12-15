@@ -13,7 +13,7 @@ class Person(db.Model):
 
     __tablename__ = 'people'
 
-    id = db.Column(db.String(50), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
     country = db.Column(db.String(50), nullable=False)
 
@@ -33,7 +33,7 @@ class Team(db.Model):
     id = db.Column(db.String(50), primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     alias = db.Column(db.String(50), nullable=False)
-    owner_id = db.Column(db.String(50), db.ForeignKey('people.id'), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=False)
 
     races = db.relationship('Race', secondary='race_results')
     owner = db.relationship('Person', primaryjoin=owner_id == Person.id)
@@ -45,7 +45,7 @@ class Vehicle(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     number = db.Column(db.Integer, nullable=False)
-    owner_id = db.Column(db.String(50), db.ForeignKey('people.id'), nullable=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=True)
     vehicle_metadata = db.Column(MutableDict.as_mutable(HSTORE), nullable=False)
 
     races = db.relationship('Race', secondary='race_results')
@@ -57,7 +57,7 @@ class DriverStanding(db.Model):
     __tablename__ = 'driver_standings'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    driver_id = db.Column(db.String(50), db.ForeignKey('people.id'), nullable=False)
+    driver_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=False)
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
     series = db.Column(db.String(5), db.ForeignKey('series.id'), nullable=False)
     season = db.Column(db.Integer, nullable=False)
@@ -184,7 +184,7 @@ class RaceEntryPerson(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     race_entry_id = db.Column(db.Integer, db.ForeignKey('race_entries.id'), nullable=False)
-    person_id = db.Column(db.String(50), db.ForeignKey('people.id'), nullable=False)
+    person_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=False)
     type = db.Column(PersonType, nullable=False)
 
     person = db.relationship('Person')
@@ -220,7 +220,7 @@ class RaceResultPerson(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     race_result_id = db.Column(db.Integer, db.ForeignKey('race_results.id'), nullable=False)
-    person_id = db.Column(db.String(50), db.ForeignKey('people.id'), nullable=False)
+    person_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=False)
     type = db.Column(PersonType, nullable=False)
 
     person = db.relationship('Person')
@@ -251,7 +251,7 @@ class QualifyingResultPerson(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     qualifying_result_id = db.Column(db.Integer, db.ForeignKey('qualifying_results.id'), nullable=False)
-    person_id = db.Column(db.String(50), db.ForeignKey('people.id'), nullable=False)
+    person_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=False)
     type = db.Column(PersonType, nullable=False)
 
     person = db.relationship('Person')
@@ -282,7 +282,7 @@ class PracticeResultPerson(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     practice_result_id = db.Column(db.Integer, db.ForeignKey(PracticeResult.id), nullable=False)
-    person_id = db.Column(db.String(50), db.ForeignKey('people.id'), nullable=False)
+    person_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=False)
     type = db.Column(PersonType, nullable=False)
 
     person = db.relationship('Person')
