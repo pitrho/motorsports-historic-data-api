@@ -6,7 +6,7 @@ from app.manage import create_and_config_app, db
 from app.models import Series, Team, Vehicle, DriverStanding, RaceTrack,\
     TeamStanding, Race, RaceResult, RaceStanding, RaceEntry, RaceEntryType, \
     QualifyingResult, PracticeResult, Person, RaceResultPerson,\
-    QualifyingResultPerson, PracticeResultPerson, RaceEntryPerson
+    QualifyingResultPerson, PracticeResultPerson, RaceEntryPerson, OwnerStanding
 from sqlalchemy.exc import OperationalError
 from psycopg2 import ProgrammingError
 import logging
@@ -512,7 +512,8 @@ class DriverStandingsListTests(BaseTest):
         expect = {u'driverstandings': [{u'id': 1,
                                         u'driver': {u'id': p1.id, u'name': 'driver 1', u'country': 'USA'},
                                         u'vehicle': {u'id': v1.id, u'number': 1,
-                                                     u'owner': {u'id': p3.id, u'name': 'vehicle owner 1', u'country': 'USA'},
+                                                     u'owner': {u'id': p3.id, u'name': 'vehicle owner 1',
+                                                                u'country': 'USA'},
                                                      u'vehicle_metadata': {u'make': u'Ford'}},
                                         u'series': u's1', u'season': 2013, u'position': 1,
                                         u'points': 500, u'poles': 5, u'wins': 5,
@@ -520,7 +521,8 @@ class DriverStandingsListTests(BaseTest):
                                        {u'id': 2,
                                         u'driver': {u'id': p2.id, u'name': 'driver 2', u'country': 'USA'},
                                         u'vehicle': {u'id': v2.id, u'number': 1,
-                                                     u'owner': {u'id': p4.id, u'name': 'vehicle owner 2', u'country': 'USA'},
+                                                     u'owner': {u'id': p4.id, u'name': 'vehicle owner 2',
+                                                                u'country': 'USA'},
                                                      u'vehicle_metadata': {u'make': u'Chevy'}},
                                         u'series': u's1', u'season': 2013, u'position': 2,
                                         u'points': 450, u'poles': 3, u'wins': 3,
@@ -594,6 +596,65 @@ class TeamStandingsListTests(BaseTest):
                                                    u'vehicle_metadata': {u'make': u'Chevy'}},
                                       u'series': u's1', u'season': 2013, u'position': 2,
                                       u'points': 450, u'poles': 3}]}
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, expect)
+
+
+class OwnerStandingsListTests(BaseTest):
+
+    def test_no_version(self):
+        '''should return no owner standings with missing or bad version'''
+
+        response = self.client.get('/api/s1/2013/ownerstandings')
+        self.assertEqual(response._status_code, 404)
+
+        response = self.client.get('/api/v0.0/s1/2013/ownerstandings')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(ownerstandings=[]))
+
+    def test_no_owner_standings(self):
+        '''should return no owner standings'''
+
+        response = self.client.get('/api/v1.0/s1/2013/ownerstandings')
+        self.assertEqual(response._status_code, 200)
+        self.assertEquals(response.json, dict(ownerstandings=[]))
+
+    def test_all_owner_standings(self):
+        '''should return all owner standings on a given series and season'''
+
+        s1 = Series(id='s1', description='series 1')
+        db.session.add(s1)
+        db.session.commit()
+
+        p1 = Person(name='owner 1', country='USA')
+        p2 = Person(name='owner 2', country='USA')
+        db.session.add_all([p1, p2])
+        db.session.commit()
+
+        v1 = Vehicle(number=1, owner_id=p1.id, vehicle_metadata={'make': 'Ford'})
+        v2 = Vehicle(number=2, owner_id=p2.id, vehicle_metadata={'make': 'Chevy'})
+        db.session.add_all([v1, v2])
+        db.session.commit()
+
+        os1 = OwnerStanding(vehicle_id=v1.id, series=s1.id,
+                            season=2013, position=1, points=500)
+        os2 = OwnerStanding(vehicle_id=v2.id, series=s1.id,
+                            season=2013, position=2, points=450)
+        db.session.add_all([os1, os2])
+        db.session.commit()
+
+        response = self.client.get('/api/v1.0/s1/2013/ownerstandings')
+
+        expect = {u'ownerstandings': [{u'id': 1,
+                                       u'vehicle': {u'id': v1.id, u'number': 1,
+                                                    u'owner': {u'id': p1.id, u'name': 'owner 1', u'country': 'USA'},
+                                                    u'vehicle_metadata': {u'make': u'Ford'}},
+                                       u'series': u's1', u'season': 2013, u'position': 1, u'points': 500},
+                                      {u'id': 2,
+                                       u'vehicle': {u'id': v2.id, u'number': 2,
+                                                    u'owner': {u'id': p2.id, u'name': 'owner 2', u'country': 'USA'},
+                                                    u'vehicle_metadata': {u'make': u'Chevy'}},
+                                       u'series': u's1', u'season': 2013, u'position': 2, u'points': 450}]}
         self.assertEqual(response._status_code, 200)
         self.assertEquals(response.json, expect)
 

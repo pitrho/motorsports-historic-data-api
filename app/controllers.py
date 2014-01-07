@@ -2,7 +2,8 @@ from flask import request
 from flask.ext.restful import Resource, fields, marshal
 from models import Team, Vehicle, DriverStanding, Race, \
     TeamStanding, RaceStanding, RaceEntry, RaceEntryType, RaceResult, \
-    QualifyingResult, PracticeResult, RaceResultPerson, PersonType
+    QualifyingResult, PracticeResult, RaceResultPerson, PersonType, \
+    OwnerStanding
 
 
 class PeopleList(Resource):
@@ -252,6 +253,48 @@ class TeamStandingsList(Resource):
                 return {'teamstandings': marshal(teamstandings.all(), self.team_standings_fields)}
 
         return {'teamstandings': []}
+
+
+class OwnerStandingsList(Resource):
+
+    person_fields = {
+        'id': fields.Integer,
+        'name': fields.String,
+        'country': fields.String
+    }
+
+    vehicle_fields = {
+        'id': fields.Integer,
+        'number': fields.Integer,
+        'owner': fields.Nested(person_fields),
+        'vehicle_metadata': fields.Raw
+    }
+
+    owner_standings_fields = {
+        'id': fields.Integer,
+        'vehicle': fields.Nested(vehicle_fields),
+        'series': fields.String,
+        'season': fields.Integer,
+        'position': fields.Integer,
+        'points': fields.Integer
+    }
+
+    def get(self, version, series=None, season=None):
+        '''
+        Handles routes
+        /api/version/series/season/ownerstandings  Owner standings from a series and season
+        '''
+
+        if version == 'v1.0':
+
+            # /api/series/season/teamstandings
+            if series is not None and season is not None:
+                ownerstandings = OwnerStanding.query.\
+                    filter(OwnerStanding.series == series).\
+                    filter(OwnerStanding.season == season)
+                return {'ownerstandings': marshal(ownerstandings.all(), self.owner_standings_fields)}
+
+        return {'ownerstandings': []}
 
 
 class RaceList(Resource):

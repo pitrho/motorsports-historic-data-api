@@ -91,6 +91,20 @@ class TeamStanding(db.Model):
     vehicle = db.relationship('Vehicle')
 
 
+class OwnerStanding(db.Model):
+
+    __tablename__ = 'owner_standings'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
+    series = db.Column(db.String(5), db.ForeignKey('series.id'), nullable=False)
+    season = db.Column(db.Integer, nullable=False)
+    position = db.Column(db.Integer, nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+
+    vehicle = db.relationship('Vehicle')
+
+
 class RaceTrack(db.Model):
 
     __tablename__ = 'race_tracks'

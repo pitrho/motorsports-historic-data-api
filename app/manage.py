@@ -7,7 +7,7 @@ from models import db
 from controllers import DriverList, TeamList, VehicleList, \
     DriverStandingsList, TeamStandingsList, RaceList, RaceStandingList, \
     RaceEntryList, RaceResultList, QualifyingResultList, PracticeResultList, \
-    PeopleList
+    PeopleList, OwnerStandingsList
 
 
 def create_app(env_config):
@@ -48,6 +48,10 @@ def create_app(env_config):
     api.add_resource(TeamStandingsList,
                      '/api/<string:version>/<string:series>/<string:season>/teamstandings',
                      endpoint='teamstandings')
+
+    api.add_resource(OwnerStandingsList,
+                     '/api/<string:version>/<string:series>/<string:season>/ownerstandings',
+                     endpoint='ownerstandings')
 
     api.add_resource(RaceList,
                      '/api/<string:version>/<string:series>/<string:season>/races',
